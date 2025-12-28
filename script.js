@@ -392,13 +392,13 @@ function adminLogin() {
     const password = document.getElementById('adminPassword').value;
 
     // Simple demo authentication
-    if (username === 'admin' && password === 'admin') {
+    if (username === 'admin' && password === 'mypassword123') {
         currentUser.isAdmin = true;
         closeModal('adminLoginModal');
         showPage('admin');
         showNotification('관리자로 로그인했습니다.');
     } else {
-        alert('아이디 또는 비밀번호가 올바르지 않습니다.\n\n데모: admin / admin');
+        alert('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
 }
 
