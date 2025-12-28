@@ -1,0 +1,475 @@
+// Global State
+let currentUser = {
+    plan: 'free',
+    isAdmin: false
+};
+
+let agents = [
+    {
+        id: 1,
+        name: 'AI 쇼츠 제작 에이전트',
+        description: 'YouTube 쇼츠, 틱톡, 릴스를 자동으로 생성하는 AI 에이전트입니다.',
+        icon: '🎬',
+        category: '비디오',
+        type: 'free'
+    },
+    {
+        id: 2,
+        name: '블로그 콘텐츠 생성기',
+        description: 'SEO 최적화된 블로그 포스트를 자동으로 작성합니다.',
+        icon: '✍️',
+        category: '글쓰기',
+        type: 'free'
+    },
+    {
+        id: 3,
+        name: '소셜 미디어 매니저',
+        description: '여러 SNS 플랫폼에 최적화된 콘텐츠를 자동 생성하고 예약합니다.',
+        icon: '📱',
+        category: '소셜미디어',
+        type: 'premium'
+    },
+    {
+        id: 4,
+        name: '썸네일 디자이너',
+        description: '클릭을 유도하는 매력적인 썸네일을 AI로 디자인합니다.',
+        icon: '🎨',
+        category: '디자인',
+        type: 'premium'
+    },
+    {
+        id: 5,
+        name: '자막 생성 에이전트',
+        description: '동영상에 자동으로 자막을 생성하고 번역합니다.',
+        icon: '💬',
+        category: '비디오',
+        type: 'free'
+    },
+    {
+        id: 6,
+        name: '음성 합성 에이전트',
+        description: '자연스러운 AI 음성으로 나레이션을 생성합니다.',
+        icon: '🎙️',
+        category: '오디오',
+        type: 'premium'
+    },
+    {
+        id: 7,
+        name: '트렌드 분석기',
+        description: '실시간 트렌드를 분석하여 바이럴 가능성 높은 주제를 추천합니다.',
+        icon: '📊',
+        category: '분석',
+        type: 'premium'
+    },
+    {
+        id: 8,
+        name: '이미지 생성 AI',
+        description: '텍스트 설명만으로 고품질 이미지를 생성합니다.',
+        icon: '🖼️',
+        category: '디자인',
+        type: 'premium'
+    },
+    {
+        id: 9,
+        name: '해시태그 추천기',
+        description: 'SNS 도달률을 높이는 최적의 해시태그를 추천합니다.',
+        icon: '#️⃣',
+        category: '소셜미디어',
+        type: 'free'
+    },
+    {
+        id: 10,
+        name: '시니어 주제 발굴기',
+        description: '경쟁이 낮고 수요가 높은 시니어 니치 주제를 발굴하고 콘텐츠를 자동 생성합니다.',
+        icon: '🎯',
+        category: '시니어',
+        type: 'premium',
+        hasPage: true,
+        pageUrl: 'senior-agent.html'
+    }
+];
+
+let nextAgentId = 10;
+let editingAgentId = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function () {
+    renderAgents();
+    renderAdminAgents();
+    renderUserAgents();
+    setupFilterTabs();
+    setupAdminTabs();
+    setupNavigation();
+});
+
+// Navigation
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            if (this.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                scrollToSection(targetId);
+
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
+}
+
+function scrollToSection(sectionId) {
+    // Hide dashboards
+    document.getElementById('admin-dashboard').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function showPage(page) {
+    // Hide all sections
+    document.getElementById('admin-dashboard').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+
+    if (page === 'admin') {
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'dashboard') {
+        document.getElementById('dashboard').classList.remove('hidden');
+        renderUserAgents();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        scrollToSection(page);
+    }
+}
+
+// Filter Tabs
+function setupFilterTabs() {
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.getAttribute('data-filter');
+            renderAgents(filter);
+        });
+    });
+}
+
+// Admin Tabs
+function setupAdminTabs() {
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    adminTabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            const targetTab = this.getAttribute('data-tab');
+
+            adminTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            document.querySelectorAll('.admin-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+}
+
+// Render Agents
+function renderAgents(filter = 'all') {
+    const grid = document.getElementById('agentsGrid');
+    const filteredAgents = filter === 'all'
+        ? agents
+        : agents.filter(agent => agent.type === filter);
+
+    grid.innerHTML = filteredAgents.map(agent => `
+        <div class="agent-card ${agent.type === 'premium' ? 'premium' : ''}" data-agent-id="${agent.id}">
+            <div class="agent-header">
+                <div class="agent-icon">${agent.icon}</div>
+                <div class="agent-badge ${agent.type}">${agent.type === 'free' ? '무료' : '프리미엄'}</div>
+            </div>
+            <h3 class="agent-title">${agent.name}</h3>
+            <div class="agent-category">${agent.category}</div>
+            <p class="agent-description">${agent.description}</p>
+            <div class="agent-footer">
+                ${agent.type === 'free' || currentUser.plan !== 'free'
+            ? `<button class="btn-primary" onclick="useAgent(${agent.id})">
+                        사용하기
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>`
+            : `<button class="btn-outline" onclick="scrollToSection('pricing')">
+                        업그레이드 필요
+                    </button>`
+        }
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderAdminAgents() {
+    const list = document.getElementById('adminAgentsList');
+    list.innerHTML = agents.map(agent => `
+        <div class="admin-agent-item">
+            <div class="admin-agent-icon">${agent.icon}</div>
+            <div class="admin-agent-info">
+                <h4>${agent.name}</h4>
+                <div class="admin-agent-meta">
+                    <span class="agent-badge ${agent.type}">${agent.type === 'free' ? '무료' : '프리미엄'}</span>
+                    <span style="color: var(--text-tertiary);">${agent.category}</span>
+                </div>
+            </div>
+            <div class="admin-agent-actions">
+                <button class="btn-icon" onclick="editAgent(${agent.id})" title="수정">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M14.1667 2.5C14.3856 2.28113 14.6454 2.10752 14.9314 1.98906C15.2173 1.87061 15.5238 1.80969 15.8334 1.80969C16.1429 1.80969 16.4494 1.87061 16.7354 1.98906C17.0214 2.10752 17.2811 2.28113 17.5 2.5C17.7189 2.71887 17.8925 2.97863 18.011 3.26461C18.1294 3.55059 18.1904 3.85706 18.1904 4.16667C18.1904 4.47627 18.1294 4.78274 18.011 5.06872C17.8925 5.3547 17.7189 5.61446 17.5 5.83333L6.25004 17.0833L1.66671 18.3333L2.91671 13.75L14.1667 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button class="btn-icon delete" onclick="deleteAgent(${agent.id})" title="삭제">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2.5 5H4.16667H17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.66669 5.00001V3.33334C6.66669 2.89131 6.84228 2.46739 7.15484 2.15483C7.4674 1.84227 7.89133 1.66667 8.33335 1.66667H11.6667C12.1087 1.66667 12.5326 1.84227 12.8452 2.15483C13.1578 2.46739 13.3334 2.89131 13.3334 3.33334V5.00001M15.8334 5.00001V16.6667C15.8334 17.1087 15.6578 17.5326 15.3452 17.8452C15.0326 18.1577 14.6087 18.3333 14.1667 18.3333H5.83335C5.39133 18.3333 4.9674 18.1577 4.65484 17.8452C4.34228 17.5326 4.16669 17.1087 4.16669 16.6667V5.00001H15.8334Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderUserAgents() {
+    const grid = document.getElementById('userAgentsGrid');
+    const availableAgents = agents.filter(agent =>
+        agent.type === 'free' || currentUser.plan !== 'free'
+    );
+
+    grid.innerHTML = availableAgents.map(agent => `
+        <div class="agent-card ${agent.type === 'premium' ? 'premium' : ''}">
+            <div class="agent-header">
+                <div class="agent-icon">${agent.icon}</div>
+                <div class="agent-badge ${agent.type}">${agent.type === 'free' ? '무료' : '프리미엄'}</div>
+            </div>
+            <h3 class="agent-title">${agent.name}</h3>
+            <div class="agent-category">${agent.category}</div>
+            <p class="agent-description">${agent.description}</p>
+            <div class="agent-footer">
+                <button class="btn-primary" onclick="useAgent(${agent.id})">
+                    사용하기
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Agent Actions
+function useAgent(agentId) {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent) {
+        // Check if agent has dedicated page
+        if (agent.hasPage && agent.pageUrl) {
+            window.location.href = agent.pageUrl;
+        } else {
+            alert(`${agent.name} 에이전트를 실행합니다.\n\n이 데모에서는 실제 에이전트 실행 기능이 구현되지 않았습니다.`);
+        }
+    }
+}
+
+function showAddAgentModal() {
+    editingAgentId = null;
+    document.getElementById('agentModalTitle').textContent = '에이전트 추가';
+    document.getElementById('agentName').value = '';
+    document.getElementById('agentDescription').value = '';
+    document.getElementById('agentIcon').value = '';
+    document.getElementById('agentCategory').value = '';
+    document.getElementById('agentType').value = 'free';
+    showModal('agentModal');
+}
+
+function editAgent(agentId) {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent) {
+        editingAgentId = agentId;
+        document.getElementById('agentModalTitle').textContent = '에이전트 수정';
+        document.getElementById('agentName').value = agent.name;
+        document.getElementById('agentDescription').value = agent.description;
+        document.getElementById('agentIcon').value = agent.icon;
+        document.getElementById('agentCategory').value = agent.category;
+        document.getElementById('agentType').value = agent.type;
+        showModal('agentModal');
+    }
+}
+
+function saveAgent() {
+    const name = document.getElementById('agentName').value.trim();
+    const description = document.getElementById('agentDescription').value.trim();
+    const icon = document.getElementById('agentIcon').value.trim();
+    const category = document.getElementById('agentCategory').value.trim();
+    const type = document.getElementById('agentType').value;
+
+    if (!name || !description || !icon || !category) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+    }
+
+    if (editingAgentId) {
+        // Edit existing agent
+        const agentIndex = agents.findIndex(a => a.id === editingAgentId);
+        if (agentIndex !== -1) {
+            agents[agentIndex] = {
+                ...agents[agentIndex],
+                name,
+                description,
+                icon,
+                category,
+                type
+            };
+        }
+    } else {
+        // Add new agent
+        agents.push({
+            id: nextAgentId++,
+            name,
+            description,
+            icon,
+            category,
+            type
+        });
+    }
+
+    renderAgents();
+    renderAdminAgents();
+    renderUserAgents();
+    closeModal('agentModal');
+
+    const message = editingAgentId ? '수정되었습니다' : '추가되었습니다';
+    showNotification(`에이전트가 ${message}.`);
+}
+
+function deleteAgent(agentId) {
+    if (confirm('정말 이 에이전트를 삭제하시겠습니까?')) {
+        agents = agents.filter(a => a.id !== agentId);
+        renderAgents();
+        renderAdminAgents();
+        renderUserAgents();
+        showNotification('에이전트가 삭제되었습니다.');
+    }
+}
+
+// Pricing
+function selectPlan(plan) {
+    if (plan === 'free') {
+        currentUser.plan = 'free';
+        document.getElementById('currentPlanName').textContent = 'Starter';
+        showNotification('무료 플랜이 선택되었습니다.');
+    } else {
+        currentUser.plan = plan;
+        const planName = plan === 'pro' ? 'Pro' : 'Enterprise';
+        document.getElementById('currentPlanName').textContent = planName;
+        alert(`${planName} 플랜 구독이 시작되었습니다.\n\n이 데모에서는 실제 결제 기능이 구현되지 않았습니다.`);
+        showNotification(`${planName} 플랜으로 업그레이드되었습니다!`);
+    }
+
+    renderAgents();
+    renderUserAgents();
+}
+
+// Admin
+function showAdminLogin(e) {
+    e.preventDefault();
+    showModal('adminLoginModal');
+}
+
+function adminLogin() {
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+
+    // Simple demo authentication
+    if (username === 'admin' && password === 'admin') {
+        currentUser.isAdmin = true;
+        closeModal('adminLoginModal');
+        showPage('admin');
+        showNotification('관리자로 로그인했습니다.');
+    } else {
+        alert('아이디 또는 비밀번호가 올바르지 않습니다.\n\n데모: admin / admin');
+    }
+}
+
+// Modal Functions
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('active');
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('active');
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function (e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('active');
+    }
+});
+
+// Notification
+function showNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: linear-gradient(135deg, hsl(260, 85%, 58%) 0%, hsl(200, 95%, 55%) 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        z-index: 3000;
+        animation: slideInRight 0.3s ease;
+        font-weight: 600;
+    `;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add animations to CSS dynamically
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);

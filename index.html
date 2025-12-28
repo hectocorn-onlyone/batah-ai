@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>batah ai - AI 콘텐츠 크리에이터 자동화 플랫폼</title>
+    <meta name="description" content="AI 콘텐츠 크리에이터를 위한 최고의 자동화 에이전트 플랫폼. 2025년부터 시작된 혁신적인 AI 솔루션.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <span class="logo-icon">🤖</span>
+                    <span class="logo-text">batah<span class="logo-ai">ai</span></span>
+                    <span class="logo-year">Est. 2025</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#home" class="nav-link active">홈</a>
+                    <a href="#agents" class="nav-link">에이전트</a>
+                    <a href="#pricing" class="nav-link">요금제</a>
+                    <a href="#" class="nav-link" onclick="showAdminLogin(event)">관리자</a>
+                    <button class="btn-primary" onclick="showPage('dashboard')">시작하기</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">✨ 2025년 출시</div>
+                <h1 class="hero-title">
+                    AI 콘텐츠 제작의<br>
+                    <span class="gradient-text">새로운 기준</span>
+                </h1>
+                <p class="hero-description">
+                    batah ai는 AI 콘텐츠 크리에이터를 위한 강력한 자동화 에이전트 플랫폼입니다.<br>
+                    시간을 절약하고 창의성에 집중하세요.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn-hero" onclick="scrollToSection('agents')">
+                        에이전트 둘러보기
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="btn-secondary" onclick="scrollToSection('pricing')">요금제 보기</button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">AI 에이전트</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">크리에이터</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1M+</div>
+                        <div class="stat-label">콘텐츠 생성</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents Section -->
+    <section id="agents" class="agents-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">강력한 AI 에이전트</h2>
+                <p class="section-description">당신의 콘텐츠 제작을 가속화할 다양한 에이전트를 만나보세요</p>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">전체</button>
+                <button class="filter-tab" data-filter="free">무료</button>
+                <button class="filter-tab" data-filter="premium">프리미엄</button>
+            </div>
+
+            <div id="agentsGrid" class="agents-grid">
+                <!-- Generated dynamically by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">간편한 요금제</h2>
+                <p class="section-description">필요에 맞는 플랜을 선택하세요</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-badge">무료</div>
+                    <h3 class="pricing-title">Starter</h3>
+                    <div class="pricing-price">
+                        <span class="price-amount">₩0</span>
+                        <span class="price-period">/월</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            기본 무료 에이전트 접근
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            월 100회 실행
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            커뮤니티 지원
+                        </li>
+                    </ul>
+                    <button class="btn-outline" onclick="selectPlan('free')">시작하기</button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="pricing-card featured">
+                    <div class="pricing-badge premium">인기</div>
+                    <h3 class="pricing-title">Pro</h3>
+                    <div class="pricing-price">
+                        <span class="price-amount">₩29,000</span>
+                        <span class="price-period">/월</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            모든 프리미엄 에이전트 접근
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            무제한 실행
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            우선 지원
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            고급 분석 도구
+                        </li>
+                    </ul>
+                    <button class="btn-primary" onclick="selectPlan('pro')">지금 구독하기</button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-badge">기업</div>
+                    <h3 class="pricing-title">Enterprise</h3>
+                    <div class="pricing-price">
+                        <span class="price-amount">₩99,000</span>
+                        <span class="price-period">/월</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            모든 Pro 기능 포함
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            팀 협업 도구
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            API 접근
+                        </li>
+                        <li class="feature-item">
+                            <svg class="feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M16.6668 5L7.50016 14.1667L3.3335 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            전담 계정 관리자
+                        </li>
+                    </ul>
+                    <button class="btn-outline" onclick="selectPlan('enterprise')">문의하기</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard (Hidden by default) -->
+    <section id="admin-dashboard" class="admin-dashboard hidden">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">관리자 대시보드</h2>
+                <button class="btn-secondary" onclick="showPage('home')">홈으로</button>
+            </div>
+
+            <div class="admin-content">
+                <div class="admin-sidebar">
+                    <button class="admin-tab active" data-tab="agents-management">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 2L2 7L10 12L18 7L10 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L10 17L18 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        에이전트 관리
+                    </button>
+                    <button class="admin-tab" data-tab="subscriptions">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M16.6667 3.33333H3.33333C2.41286 3.33333 1.66667 4.07953 1.66667 5V15C1.66667 15.9205 2.41286 16.6667 3.33333 16.6667H16.6667C17.5871 16.6667 18.3333 15.9205 18.3333 15V5C18.3333 4.07953 17.5871 3.33333 16.6667 3.33333Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        구독 관리
+                    </button>
+                </div>
+
+                <div class="admin-main">
+                    <!-- Agents Management Tab -->
+                    <div id="agents-management" class="admin-tab-content active">
+                        <div class="admin-section-header">
+                            <h3>에이전트 관리</h3>
+                            <button class="btn-primary" onclick="showAddAgentModal()">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                에이전트 추가
+                            </button>
+                        </div>
+
+                        <div id="adminAgentsList" class="admin-agents-list">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Subscriptions Tab -->
+                    <div id="subscriptions" class="admin-tab-content">
+                        <div class="admin-section-header">
+                            <h3>구독 관리</h3>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-card-value">1,234</div>
+                                <div class="stat-card-label">총 사용자</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-card-value">456</div>
+                                <div class="stat-card-label">Pro 구독자</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-card-value">89</div>
+                                <div class="stat-card-label">Enterprise 구독자</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Dashboard (Hidden by default) -->
+    <section id="dashboard" class="user-dashboard hidden">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">내 대시보드</h2>
+                <button class="btn-secondary" onclick="showPage('home')">홈으로</button>
+            </div>
+
+            <div class="user-content">
+                <div class="subscription-status">
+                    <h3>현재 구독</h3>
+                    <div class="current-plan">
+                        <div class="plan-info">
+                            <div class="plan-name" id="currentPlanName">Starter</div>
+                            <div class="plan-description">무료 플랜</div>
+                        </div>
+                        <button class="btn-primary" onclick="scrollToSection('pricing')">업그레이드</button>
+                    </div>
+                </div>
+
+                <div class="my-agents">
+                    <h3>사용 가능한 에이전트</h3>
+                    <div id="userAgentsGrid" class="agents-grid">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modals -->
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>관리자 로그인</h3>
+                <button class="modal-close" onclick="closeModal('adminLoginModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>아이디</label>
+                    <input type="text" id="adminUsername" placeholder="admin" class="input">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="adminPassword" placeholder="비밀번호 입력" class="input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('adminLoginModal')">취소</button>
+                <button class="btn-primary" onclick="adminLogin()">로그인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Agent Modal -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="agentModalTitle">에이전트 추가</h3>
+                <button class="modal-close" onclick="closeModal('agentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>에이전트 이름</label>
+                    <input type="text" id="agentName" placeholder="예: 쇼츠 제작 에이전트" class="input">
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea id="agentDescription" placeholder="에이전트 설명을 입력하세요" class="input" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>아이콘 (이모지)</label>
+                    <input type="text" id="agentIcon" placeholder="🎬" class="input" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <input type="text" id="agentCategory" placeholder="예: 비디오" class="input">
+                </div>
+                <div class="form-group">
+                    <label>타입</label>
+                    <select id="agentType" class="input">
+                        <option value="free">무료</option>
+                        <option value="premium">프리미엄</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('agentModal')">취소</button>
+                <button class="btn-primary" onclick="saveAgent()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-icon">🤖</span>
+                        <span class="logo-text">batah<span class="logo-ai">ai</span></span>
+                    </div>
+                    <p class="footer-description">AI 콘텐츠 크리에이터를 위한<br>차세대 자동화 플랫폼</p>
+                    <p class="footer-copyright">© 2025 batah ai. All rights reserved.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>제품</h4>
+                        <a href="#agents">에이전트</a>
+                        <a href="#pricing">요금제</a>
+                        <a href="#">API</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>회사</h4>
+                        <a href="#">소개</a>
+                        <a href="#">블로그</a>
+                        <a href="#">채용</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>지원</h4>
+                        <a href="#">도움말</a>
+                        <a href="#">문의</a>
+                        <a href="#">상태</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
