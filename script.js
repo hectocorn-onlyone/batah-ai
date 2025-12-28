@@ -1,8 +1,27 @@
 // Global State
 let currentUser = {
+    id: null,
+    username: null,
     plan: 'free',
-    isAdmin: false
+    isAdmin: false,
+    isLoggedIn: false
 };
+
+// 등록된 사용자 목록 (LocalStorage에서 로드)
+let registeredUsers = JSON.parse(localStorage.getItem('batah_users')) || [];
+
+// 결제 요청 목록 (LocalStorage에서 로드)
+let paymentRequests = JSON.parse(localStorage.getItem('batah_payment_requests')) || [];
+
+// 사용자 데이터 저장
+function saveUsers() {
+    localStorage.setItem('batah_users', JSON.stringify(registeredUsers));
+}
+
+// 결제 요청 저장
+function savePaymentRequests() {
+    localStorage.setItem('batah_payment_requests', JSON.stringify(paymentRequests));
+}
 
 let agents = [
     {
@@ -458,9 +477,18 @@ function processTossPayment(plan, planName, price) {
     selectPaymentMethod('bank');
 }
 
-// 계좌이체 처리
+// 계좌이체 처리 - 로그인 필수, 결제 요청 생성
 function processBankTransfer(plan, planName) {
+    // 로그인 체크
+    if (!currentUser.isLoggedIn) {
+        alert('⚠️ 결제를 진행하려면 먼저 로그인해주세요.');
+        closeModal('paymentModal');
+        showUserLogin();
+        return;
+    }
+
     const depositorName = document.getElementById('depositorName').value;
+    const planPrice = plan === 'pro' ? '29,000' : '99,000';
 
     if (!depositorName) {
         alert('입금자명을 입력해주세요.');
@@ -471,13 +499,29 @@ function processBankTransfer(plan, planName) {
     btn.textContent = '확인 요청 중...';
     btn.disabled = true;
 
+    // 결제 요청 생성
+    const paymentRequest = {
+        id: Date.now(),
+        userId: currentUser.id,
+        username: currentUser.username,
+        depositorName: depositorName,
+        plan: plan,
+        planName: planName,
+        price: planPrice,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+
+    paymentRequests.push(paymentRequest);
+    savePaymentRequests();
+
     setTimeout(() => {
         closeModal('paymentModal');
         btn.textContent = '✅ 입금 완료 확인 요청';
         btn.disabled = false;
         document.getElementById('depositorName').value = '';
 
-        alert(`입금 확인 요청이 접수되었습니다.\n\n입금자명: ${depositorName}\n플랜: ${planName}\n\n관리자 확인 후 플랜이 활성화됩니다.\n(영업일 기준 1-2일 소요)`);
+        alert(`입금 확인 요청이 접수되었습니다.\n\n입금자명: ${depositorName}\n플랜: ${planName}\n금액: ₩${planPrice}\n\n관리자 확인 후 플랜이 활성화됩니다.\n(영업일 기준 1-2일 소요)`);
         showNotification(`📋 ${planName} 플랜 입금 확인 요청이 접수되었습니다.`);
     }, 1000);
 }
@@ -612,3 +656,290 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ==== 사용자 인증 시스템 ====
+
+// 로그인 모달 표시
+function showUserLogin() {
+    showModal('userLoginModal');
+}
+
+// 인증 탭 전환
+let currentAuthMode = 'login';
+function switchAuthTab(mode) {
+    currentAuthMode = mode;
+    document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('authSubmitBtn').textContent = mode === 'login' ? '로그인' : '회원가입';
+}
+
+// 인증 제출
+function submitAuth() {
+    if (currentAuthMode === 'login') {
+        userLogin();
+    } else {
+        userRegister();
+    }
+}
+
+// 사용자 로그인
+function userLogin() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) {
+        alert('아이디와 비밀번호를 입력해주세요.');
+        return;
+    }
+
+    const user = registeredUsers.find(u => u.username === username && u.password === password);
+    if (user) {
+        currentUser = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            plan: user.plan,
+            isAdmin: false,
+            isLoggedIn: true
+        };
+        document.getElementById('currentPlanName').textContent = getPlanDisplayName(user.plan);
+        closeModal('userLoginModal');
+        showNotification(`🎉 ${user.name}님, 환영합니다!`);
+        renderAgents();
+        renderUserAgents();
+        updateNavForLoggedIn();
+    } else {
+        alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+    }
+}
+
+// 사용자 회원가입
+function userRegister() {
+    const username = document.getElementById('registerUsername').value;
+    const password = document.getElementById('registerPassword').value;
+    const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+    const name = document.getElementById('registerName').value;
+
+    if (!username || !password || !name) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        alert('비밀번호가 일치하지 않습니다.');
+        return;
+    }
+
+    if (registeredUsers.find(u => u.username === username)) {
+        alert('이미 사용 중인 아이디입니다.');
+        return;
+    }
+
+    const newUser = {
+        id: Date.now(),
+        username: username,
+        password: password,
+        name: name,
+        plan: 'free',
+        createdAt: new Date().toISOString()
+    };
+
+    registeredUsers.push(newUser);
+    saveUsers();
+
+    // 자동 로그인
+    currentUser = {
+        id: newUser.id,
+        username: newUser.username,
+        name: newUser.name,
+        plan: 'free',
+        isAdmin: false,
+        isLoggedIn: true
+    };
+
+    closeModal('userLoginModal');
+    showNotification(`🎉 ${name}님, 회원가입을 환영합니다!`);
+    updateNavForLoggedIn();
+    clearRegisterForm();
+}
+
+// 회원가입 폼 초기화
+function clearRegisterForm() {
+    document.getElementById('registerUsername').value = '';
+    document.getElementById('registerPassword').value = '';
+    document.getElementById('registerPasswordConfirm').value = '';
+    document.getElementById('registerName').value = '';
+}
+
+// 로그아웃
+function userLogout() {
+    currentUser = {
+        id: null,
+        username: null,
+        plan: 'free',
+        isAdmin: false,
+        isLoggedIn: false
+    };
+    document.getElementById('currentPlanName').textContent = 'Starter';
+    showNotification('👋 로그아웃되었습니다.');
+    showPage('home');
+    renderAgents();
+    updateNavForLoggedOut();
+}
+
+// 네비게이션 업데이트 (로그인 상태)
+function updateNavForLoggedIn() {
+    const nav = document.querySelector('.nav-actions');
+    nav.innerHTML = `
+        <span style="color: var(--text-secondary); margin-right: 1rem;">👤 ${currentUser.name}</span>
+        <button class="btn-secondary btn-sm" onclick="userLogout()">로그아웃</button>
+    `;
+}
+
+// 네비게이션 업데이트 (로그아웃 상태)
+function updateNavForLoggedOut() {
+    const nav = document.querySelector('.nav-actions');
+    nav.innerHTML = `<button class="btn-primary" onclick="showUserLogin()">로그인</button>`;
+}
+
+// 플랜 표시 이름
+function getPlanDisplayName(plan) {
+    const names = { free: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
+    return names[plan] || 'Starter';
+}
+
+// ==== 결제 요청 시스템 ====
+
+// 결제 요청 목록 렌더링
+function renderPaymentRequests() {
+    const list = document.getElementById('paymentRequestsList');
+    if (!list) return;
+
+    const pendingRequests = paymentRequests.filter(r => r.status === 'pending');
+
+    if (pendingRequests.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-tertiary); text-align: center;">대기 중인 결제 요청이 없습니다.</p>';
+        return;
+    }
+
+    list.innerHTML = pendingRequests.map(req => `
+        <div class="payment-request-item">
+            <div class="request-info">
+                <strong>${req.depositorName}</strong> (${req.username})
+                <span class="request-plan">${req.planName} 플랜 - ₩${req.price}</span>
+                <span class="request-date">${new Date(req.createdAt).toLocaleString('ko-KR')}</span>
+            </div>
+            <div class="request-actions">
+                <button class="btn-sm btn-success" onclick="approvePayment(${req.id})">✓ 승인</button>
+                <button class="btn-sm btn-danger" onclick="rejectPayment(${req.id})">✗ 거절</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 결제 승인
+function approvePayment(requestId) {
+    const request = paymentRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    // 사용자 플랜 업데이트
+    const user = registeredUsers.find(u => u.id === request.userId);
+    if (user) {
+        user.plan = request.plan;
+        saveUsers();
+    }
+
+    // 요청 상태 업데이트
+    request.status = 'approved';
+    request.approvedAt = new Date().toISOString();
+    savePaymentRequests();
+
+    showNotification(`✅ ${request.depositorName}님의 ${request.planName} 플랜이 승인되었습니다.`);
+    renderPaymentRequests();
+    renderUsersList();
+}
+
+// 결제 거절
+function rejectPayment(requestId) {
+    const request = paymentRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    request.status = 'rejected';
+    request.rejectedAt = new Date().toISOString();
+    savePaymentRequests();
+
+    showNotification(`❌ ${request.depositorName}님의 결제 요청이 거절되었습니다.`);
+    renderPaymentRequests();
+}
+
+// ==== 사용자 관리 ====
+
+// 사용자 목록 렌더링
+function renderUsersList() {
+    const list = document.getElementById('usersList');
+    if (!list) return;
+
+    if (registeredUsers.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-tertiary); text-align: center;">등록된 사용자가 없습니다.</p>';
+        return;
+    }
+
+    list.innerHTML = registeredUsers.map(user => `
+        <div class="user-item">
+            <div class="user-info">
+                <strong>${user.name}</strong> 
+                <span class="user-username">@${user.username}</span>
+                <span class="user-plan-badge ${user.plan}">${getPlanDisplayName(user.plan)}</span>
+            </div>
+            <div class="user-actions">
+                <select onchange="changeUserPlan(${user.id}, this.value)" class="plan-select">
+                    <option value="free" ${user.plan === 'free' ? 'selected' : ''}>Starter (무료)</option>
+                    <option value="pro" ${user.plan === 'pro' ? 'selected' : ''}>Pro</option>
+                    <option value="enterprise" ${user.plan === 'enterprise' ? 'selected' : ''}>Enterprise</option>
+                </select>
+            </div>
+        </div>
+    `).join('');
+
+    // 통계 업데이트
+    updateUserStats();
+}
+
+// 사용자 플랜 변경
+function changeUserPlan(userId, newPlan) {
+    const user = registeredUsers.find(u => u.id === userId);
+    if (user) {
+        user.plan = newPlan;
+        saveUsers();
+        showNotification(`✅ ${user.name}님의 플랜이 ${getPlanDisplayName(newPlan)}으로 변경되었습니다.`);
+        renderUsersList();
+    }
+}
+
+// 통계 업데이트
+function updateUserStats() {
+    const total = registeredUsers.length;
+    const pro = registeredUsers.filter(u => u.plan === 'pro').length;
+    const enterprise = registeredUsers.filter(u => u.plan === 'enterprise').length;
+
+    const totalEl = document.getElementById('totalUsersCount');
+    const proEl = document.getElementById('proUsersCount');
+    const entEl = document.getElementById('enterpriseUsersCount');
+
+    if (totalEl) totalEl.textContent = total;
+    if (proEl) proEl.textContent = pro;
+    if (entEl) entEl.textContent = enterprise;
+}
+
+// 관리자 페이지 진입 시 렌더링
+const originalShowPage = showPage;
+showPage = function (page) {
+    originalShowPage(page);
+    if (page === 'admin') {
+        renderPaymentRequests();
+        renderUsersList();
+    }
+};

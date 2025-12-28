@@ -1257,6 +1257,152 @@ textarea.input {
     margin-top: var(--spacing-md);
 }
 
+/* Auth Tabs */
+.auth-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-weight: 600;
+}
+
+.auth-tab:hover {
+    background: rgba(124, 77, 255, 0.1);
+}
+
+.auth-tab.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border-color: transparent;
+}
+
+/* Payment Requests and User Management */
+.payment-requests-section h4,
+.users-section h4 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.payment-requests-list,
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.payment-request-item,
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.request-info,
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.request-plan,
+.user-username {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.request-date {
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+}
+
+.request-actions,
+.user-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    border: none;
+    transition: var(--transition-base);
+}
+
+.btn-success {
+    background: rgba(76, 217, 100, 0.2);
+    color: var(--success);
+}
+
+.btn-success:hover {
+    background: rgba(76, 217, 100, 0.3);
+}
+
+.btn-danger {
+    background: rgba(255, 69, 58, 0.2);
+    color: var(--error);
+}
+
+.btn-danger:hover {
+    background: rgba(255, 69, 58, 0.3);
+}
+
+.plan-select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.user-plan-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 0.5rem;
+}
+
+.user-plan-badge.free {
+    background: rgba(124, 77, 255, 0.2);
+    color: var(--primary);
+}
+
+.user-plan-badge.pro {
+    background: rgba(0, 199, 190, 0.2);
+    color: var(--secondary);
+}
+
+.user-plan-badge.enterprise {
+    background: rgba(255, 159, 67, 0.2);
+    color: #FF9F43;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
 .payment-notice {
     background: var(--bg-tertiary);
     border-radius: var(--radius-md);
