@@ -445,63 +445,17 @@ function processPayment() {
     }
 }
 
-// 카드 결제 처리
+// 카드 결제 처리 (준비중 - 실제 PG 연동 필요)
 function processCardPayment(plan, planName) {
-    const cardNumber = document.getElementById('cardNumber').value;
-    const expiry = document.getElementById('cardExpiry').value;
-    const cvc = document.getElementById('cardCVC').value;
-    const cardName = document.getElementById('cardName').value;
-
-    if (!cardNumber || !expiry || !cvc || !cardName) {
-        alert('모든 카드 정보를 입력해주세요.');
-        return;
-    }
-
-    if (cardNumber.replace(/\s/g, '').length < 16) {
-        alert('올바른 카드 번호를 입력해주세요.');
-        return;
-    }
-
-    const btn = document.querySelector('#paymentModal .btn-primary');
-    btn.textContent = '처리 중...';
-    btn.disabled = true;
-
-    setTimeout(() => {
-        currentUser.plan = plan;
-        document.getElementById('currentPlanName').textContent = planName;
-        closeModal('paymentModal');
-        btn.textContent = '💳 카드 결제하기';
-        btn.disabled = false;
-        clearCardInputs();
-        showNotification(`🎉 ${planName} 플랜 결제가 완료되었습니다!`);
-        renderAgents();
-        renderUserAgents();
-    }, 2000);
+    alert(`💳 신용카드 결제 기능 준비중입니다.\n\n현재는 계좌이체로만 결제 가능합니다.\n입금 확인 후 플랜이 활성화됩니다.`);
+    selectPaymentMethod('bank');
 }
 
-// 토스페이먼츠 결제
+// 토스페이먼츠 결제 (준비중 - 가맹점 등록 필요)
+// 토스페이먼츠 결제 (준비중 - 가맹점 등록 필요)
 function processTossPayment(plan, planName, price) {
-    const btn = document.querySelector('#paymentModal .btn-primary');
-    btn.textContent = '토스페이먼츠 연결 중...';
-    btn.disabled = true;
-
-    // 토스페이먼츠 API 호출 (실제 연동 시 사용)
-    // 현재는 데모로 시뮬레이션
-    setTimeout(() => {
-        // 실제 구현 시: TossPayments SDK 호출
-        // tossPayments.requestPayment('카드', { ... })
-
-        alert(`토스페이먼츠 결제 페이지로 이동합니다.\n\n플랜: ${planName}\n금액: ₩${price}\n\n※ 실제 연동을 위해서는 토스페이먼츠 가맹점 등록이 필요합니다.`);
-
-        currentUser.plan = plan;
-        document.getElementById('currentPlanName').textContent = planName;
-        closeModal('paymentModal');
-        btn.textContent = '🔵 토스페이먼츠로 결제';
-        btn.disabled = false;
-        showNotification(`🎉 ${planName} 플랜 결제가 완료되었습니다!`);
-        renderAgents();
-        renderUserAgents();
-    }, 1500);
+    alert(`🔵 토스페이먼츠 결제 기능 준비중입니다.\n\n가맹점 등록 후 이용 가능합니다.\n현재는 계좌이체로만 결제 가능합니다.`);
+    selectPaymentMethod('bank');
 }
 
 // 계좌이체 처리
