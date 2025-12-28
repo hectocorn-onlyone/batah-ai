@@ -273,6 +273,13 @@ function renderUserAgents() {
 function useAgent(agentId) {
     const agent = agents.find(a => a.id === agentId);
     if (agent) {
+        // 프리미엄 에이전트 접근 제한 체크
+        if (agent.type === 'premium' && currentUser.plan === 'free') {
+            alert(`⚠️ ${agent.name}은(는) 프리미엄 에이전트입니다.\n\n이용하시려면 Pro 또는 Enterprise 플랜으로 업그레이드해주세요.`);
+            scrollToSection('pricing');
+            return;
+        }
+
         // Check if agent has dedicated page
         if (agent.hasPage && agent.pageUrl) {
             window.location.href = agent.pageUrl;
