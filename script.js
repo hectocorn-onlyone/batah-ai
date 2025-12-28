@@ -405,7 +405,7 @@ function selectPaymentMethod(method) {
     document.querySelectorAll('.payment-method').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target?.classList.add('active') || document.querySelector(`[data-method="${method}"]`)?.classList.add('active');
+    document.querySelector(`[data-method="${method}"]`)?.classList.add('active');
 
     // 입력 폼 표시/숨김
     document.getElementById('cardPaymentForm').style.display = method === 'card' ? 'block' : 'none';
