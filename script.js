@@ -407,6 +407,13 @@ function selectPlan(plan) {
 let currentPaymentMethod = 'card';
 
 function showPaymentModal(plan) {
+    // 로그인 체크 - 로그인한 사용자만 결제 가능
+    if (!currentUser.isLoggedIn) {
+        alert('⚠️ 결제를 진행하려면 먼저 로그인해주세요.');
+        showUserLogin();
+        return;
+    }
+
     const planInfo = {
         pro: { name: 'Pro', price: '29,000', features: '모든 프리미엄 에이전트 + 무제한 실행' },
         enterprise: { name: 'Enterprise', price: '99,000', features: '팀 협업 + API 접근 + 전담 관리자' }
