@@ -531,7 +531,7 @@ function clearCardInputs() {
 
 // 계좌번호 복사
 function copyAccountNumber() {
-    const accountNumber = '123-456-789012';
+    const accountNumber = '100-107-464347';
     navigator.clipboard.writeText(accountNumber).then(() => {
         showNotification('📋 계좌번호가 복사되었습니다!');
     }).catch(() => {
