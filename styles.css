@@ -13,26 +13,26 @@
     --secondary: hsl(200, 95%, 55%);
     --accent: hsl(330, 85%, 60%);
     --success: hsl(145, 65%, 50%);
-    
+
     --bg-primary: hsl(240, 15%, 8%);
     --bg-secondary: hsl(240, 12%, 12%);
     --bg-tertiary: hsl(240, 10%, 16%);
     --bg-card: hsl(240, 12%, 14%);
-    
+
     --text-primary: hsl(0, 0%, 98%);
     --text-secondary: hsl(0, 0%, 70%);
     --text-tertiary: hsl(0, 0%, 50%);
-    
+
     --border-color: hsl(240, 8%, 20%);
     --border-hover: hsl(240, 8%, 30%);
-    
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
     --gradient-orb-1: radial-gradient(circle, hsla(260, 85%, 58%, 0.15) 0%, transparent 70%);
     --gradient-orb-2: radial-gradient(circle, hsla(200, 95%, 55%, 0.12) 0%, transparent 70%);
     --gradient-orb-3: radial-gradient(circle, hsla(330, 85%, 60%, 0.1) 0%, transparent 70%);
-    
+
     /* Spacing */
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
@@ -40,19 +40,19 @@
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
     --spacing-2xl: 4rem;
-    
+
     /* Border Radius */
     --radius-sm: 0.5rem;
     --radius-md: 1rem;
     --radius-lg: 1.5rem;
     --radius-xl: 2rem;
-    
+
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
     --shadow-glow: 0 0 40px rgba(130, 80, 255, 0.3);
-    
+
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-base: 0.3s ease;
@@ -67,7 +67,12 @@ body {
     overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
     line-height: 1.2;
@@ -112,8 +117,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
 }
 
 .logo-text {
@@ -293,9 +305,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes drift {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(50px, -30px) scale(1.1); }
-    66% { transform: translate(-30px, 50px) scale(0.9); }
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(50px, -30px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-30px, 50px) scale(0.9);
+    }
 }
 
 .hero-content {
@@ -380,6 +402,7 @@ h1, h2, h3, h4, h5, h6 {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -922,6 +945,7 @@ h1, h2, h3, h4, h5, h6 {
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1060,6 +1084,96 @@ textarea.input {
     color: var(--primary-hover);
 }
 
+
+/* Payment Modal Styles */
+.payment-plan-info {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(130, 80, 255, 0.1), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(130, 80, 255, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.payment-plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-hover);
+    font-family: 'Outfit', sans-serif;
+}
+
+.payment-plan-price {
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: var(--spacing-xs) 0;
+}
+
+.payment-plan-features {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.payment-methods {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.payment-method {
+    flex: 1;
+    padding: var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.payment-method:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.payment-method.active {
+    border-color: var(--primary);
+    background: rgba(130, 80, 255, 0.1);
+    color: var(--primary-hover);
+}
+
+.payment-method:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.payment-notice {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.payment-notice p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.payment-notice p:last-child {
+    margin-bottom: 0;
+}
+
 /* Utility Classes */
 .hidden {
     display: none !important;
@@ -1070,44 +1184,44 @@ textarea.input {
     .nav-links {
         display: none;
     }
-    
+
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .hero-description {
         font-size: 1rem;
     }
-    
+
     .hero-stats {
         grid-template-columns: 1fr;
         gap: var(--spacing-md);
     }
-    
+
     .hero-actions {
         flex-direction: column;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .agents-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .pricing-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .admin-content {
         grid-template-columns: 1fr;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
     }
-    
+
     .footer-links {
         grid-template-columns: 1fr;
     }

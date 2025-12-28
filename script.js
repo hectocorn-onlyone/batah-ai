@@ -369,16 +369,89 @@ function selectPlan(plan) {
         currentUser.plan = 'free';
         document.getElementById('currentPlanName').textContent = 'Starter';
         showNotification('무료 플랜이 선택되었습니다.');
+        renderAgents();
+        renderUserAgents();
     } else {
+        // 결제 모달 표시
+        showPaymentModal(plan);
+    }
+}
+
+// 결제 모달
+function showPaymentModal(plan) {
+    const planInfo = {
+        pro: { name: 'Pro', price: '29,000', features: '모든 프리미엄 에이전트 + 무제한 실행' },
+        enterprise: { name: 'Enterprise', price: '99,000', features: '팀 협업 + API 접근 + 전담 관리자' }
+    };
+    const info = planInfo[plan];
+
+    document.getElementById('paymentPlanName').textContent = info.name;
+    document.getElementById('paymentPlanPrice').textContent = `₩${info.price}/월`;
+    document.getElementById('paymentPlanFeatures').textContent = info.features;
+    document.getElementById('selectedPaymentPlan').value = plan;
+
+    showModal('paymentModal');
+}
+
+// 결제 처리
+function processPayment() {
+    const plan = document.getElementById('selectedPaymentPlan').value;
+    const cardNumber = document.getElementById('cardNumber').value;
+    const expiry = document.getElementById('cardExpiry').value;
+    const cvc = document.getElementById('cardCVC').value;
+    const cardName = document.getElementById('cardName').value;
+
+    // 기본 유효성 검사
+    if (!cardNumber || !expiry || !cvc || !cardName) {
+        alert('모든 카드 정보를 입력해주세요.');
+        return;
+    }
+
+    if (cardNumber.replace(/\s/g, '').length < 16) {
+        alert('올바른 카드 번호를 입력해주세요.');
+        return;
+    }
+
+    // 결제 처리 시뮬레이션
+    const btn = document.querySelector('#paymentModal .btn-primary');
+    btn.textContent = '처리 중...';
+    btn.disabled = true;
+
+    setTimeout(() => {
         currentUser.plan = plan;
         const planName = plan === 'pro' ? 'Pro' : 'Enterprise';
         document.getElementById('currentPlanName').textContent = planName;
-        alert(`${planName} 플랜 구독이 시작되었습니다.\n\n이 데모에서는 실제 결제 기능이 구현되지 않았습니다.`);
-        showNotification(`${planName} 플랜으로 업그레이드되었습니다!`);
-    }
 
-    renderAgents();
-    renderUserAgents();
+        closeModal('paymentModal');
+        btn.textContent = '결제하기';
+        btn.disabled = false;
+
+        // 카드 정보 초기화
+        document.getElementById('cardNumber').value = '';
+        document.getElementById('cardExpiry').value = '';
+        document.getElementById('cardCVC').value = '';
+        document.getElementById('cardName').value = '';
+
+        showNotification(`🎉 ${planName} 플랜 결제가 완료되었습니다!`);
+        renderAgents();
+        renderUserAgents();
+    }, 2000);
+}
+
+// 카드 번호 포맷팅
+function formatCardNumber(input) {
+    let value = input.value.replace(/\s/g, '').replace(/\D/g, '');
+    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+    input.value = formatted.substring(0, 19);
+}
+
+// 만료일 포맷팅
+function formatExpiry(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    input.value = value.substring(0, 5);
 }
 
 // Admin
@@ -394,9 +467,13 @@ function adminLogin() {
     // Simple demo authentication
     if (username === 'admin' && password === 'mypassword123') {
         currentUser.isAdmin = true;
+        currentUser.plan = 'enterprise'; // 관리자는 전체 서비스 이용 가능
+        document.getElementById('currentPlanName').textContent = 'Enterprise (관리자)';
         closeModal('adminLoginModal');
         showPage('admin');
-        showNotification('관리자로 로그인했습니다.');
+        showNotification('🔐 관리자로 로그인했습니다. 전체 서비스를 이용할 수 있습니다.');
+        renderAgents();
+        renderUserAgents();
     } else {
         alert('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
