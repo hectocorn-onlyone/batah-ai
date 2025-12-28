@@ -398,7 +398,7 @@
 
     <!-- Payment Modal -->
     <div id="paymentModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h3>💳 결제하기</h3>
                 <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
@@ -412,29 +412,69 @@
                 <input type="hidden" id="selectedPaymentPlan" value="pro">
 
                 <div class="payment-methods">
-                    <button class="payment-method active">💳 신용카드</button>
-                    <button class="payment-method" disabled>카카오페이 (준비중)</button>
+                    <button class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">💳
+                        신용카드</button>
+                    <button class="payment-method" data-method="toss" onclick="selectPaymentMethod('toss')">🔵
+                        토스페이먼츠</button>
+                    <button class="payment-method" data-method="bank" onclick="selectPaymentMethod('bank')">🏦
+                        계좌이체</button>
                 </div>
 
-                <div class="form-group">
-                    <label>카드 번호</label>
-                    <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" class="input" maxlength="19"
-                        oninput="formatCardNumber(this)">
-                </div>
-                <div class="form-row">
+                <!-- 신용카드 폼 -->
+                <div id="cardPaymentForm">
                     <div class="form-group">
-                        <label>만료일</label>
-                        <input type="text" id="cardExpiry" placeholder="MM/YY" class="input" maxlength="5"
-                            oninput="formatExpiry(this)">
+                        <label>카드 번호</label>
+                        <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" class="input"
+                            maxlength="19" oninput="formatCardNumber(this)">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>만료일</label>
+                            <input type="text" id="cardExpiry" placeholder="MM/YY" class="input" maxlength="5"
+                                oninput="formatExpiry(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>CVC</label>
+                            <input type="text" id="cardCVC" placeholder="000" class="input" maxlength="3">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>CVC</label>
-                        <input type="text" id="cardCVC" placeholder="000" class="input" maxlength="3">
+                        <label>카드 소유자명</label>
+                        <input type="text" id="cardName" placeholder="홍길동" class="input">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>카드 소유자명</label>
-                    <input type="text" id="cardName" placeholder="홍길동" class="input">
+
+                <!-- 토스페이먼츠 폼 -->
+                <div id="tossPaymentForm" style="display: none;">
+                    <div class="toss-info">
+                        <div class="toss-logo">🔵</div>
+                        <h4>토스페이먼츠</h4>
+                        <p>안전하고 빠른 토스페이먼츠로 결제하세요.</p>
+                        <ul class="toss-features">
+                            <li>✓ 간편 결제</li>
+                            <li>✓ 카드/계좌 자동 저장</li>
+                            <li>✓ 매월 자동 결제</li>
+                        </ul>
+                        <p class="toss-notice">※ 토스페이먼츠 가맹점 등록 후 실제 결제가 가능합니다.</p>
+                    </div>
+                </div>
+
+                <!-- 계좌이체 폼 -->
+                <div id="bankTransferForm" style="display: none;">
+                    <div class="bank-info">
+                        <h4>💰 입금 계좌 정보</h4>
+                        <div class="account-box">
+                            <div class="account-bank">카카오뱅크</div>
+                            <div class="account-number">123-456-789012</div>
+                            <div class="account-holder">주식회사 바타에이아이</div>
+                            <button class="btn-copy" onclick="copyAccountNumber()">📋 계좌번호 복사</button>
+                        </div>
+                        <div class="form-group">
+                            <label>입금자명</label>
+                            <input type="text" id="depositorName" placeholder="입금하실 성함" class="input">
+                        </div>
+                        <p class="bank-notice">⚠️ 입금자명과 동일하게 입력해주세요. 입금 확인 후 플랜이 활성화됩니다.</p>
+                    </div>
                 </div>
 
                 <div class="payment-notice">
@@ -444,7 +484,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeModal('paymentModal')">취소</button>
-                <button class="btn-primary" onclick="processPayment()">결제하기</button>
+                <button class="btn-primary" onclick="processPayment()">💳 카드 결제하기</button>
             </div>
         </div>
     </div>

@@ -378,6 +378,8 @@ function selectPlan(plan) {
 }
 
 // 결제 모달
+let currentPaymentMethod = 'card';
+
 function showPaymentModal(plan) {
     const planInfo = {
         pro: { name: 'Pro', price: '29,000', features: '모든 프리미엄 에이전트 + 무제한 실행' },
@@ -390,18 +392,59 @@ function showPaymentModal(plan) {
     document.getElementById('paymentPlanFeatures').textContent = info.features;
     document.getElementById('selectedPaymentPlan').value = plan;
 
+    // 결제 방식 초기화
+    selectPaymentMethod('card');
     showModal('paymentModal');
+}
+
+// 결제 방식 선택
+function selectPaymentMethod(method) {
+    currentPaymentMethod = method;
+
+    // 버튼 활성화 상태 변경
+    document.querySelectorAll('.payment-method').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target?.classList.add('active') || document.querySelector(`[data-method="${method}"]`)?.classList.add('active');
+
+    // 입력 폼 표시/숨김
+    document.getElementById('cardPaymentForm').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('tossPaymentForm').style.display = method === 'toss' ? 'block' : 'none';
+    document.getElementById('bankTransferForm').style.display = method === 'bank' ? 'block' : 'none';
+
+    // 결제 버튼 텍스트 변경
+    const payBtn = document.querySelector('#paymentModal .btn-primary');
+    if (method === 'card') {
+        payBtn.textContent = '💳 카드 결제하기';
+    } else if (method === 'toss') {
+        payBtn.textContent = '🔵 토스페이먼츠로 결제';
+    } else {
+        payBtn.textContent = '✅ 입금 완료 확인 요청';
+    }
 }
 
 // 결제 처리
 function processPayment() {
     const plan = document.getElementById('selectedPaymentPlan').value;
+    const planName = plan === 'pro' ? 'Pro' : 'Enterprise';
+    const planPrice = plan === 'pro' ? '29,000' : '99,000';
+
+    if (currentPaymentMethod === 'card') {
+        processCardPayment(plan, planName);
+    } else if (currentPaymentMethod === 'toss') {
+        processTossPayment(plan, planName, planPrice);
+    } else {
+        processBankTransfer(plan, planName);
+    }
+}
+
+// 카드 결제 처리
+function processCardPayment(plan, planName) {
     const cardNumber = document.getElementById('cardNumber').value;
     const expiry = document.getElementById('cardExpiry').value;
     const cvc = document.getElementById('cardCVC').value;
     const cardName = document.getElementById('cardName').value;
 
-    // 기본 유효성 검사
     if (!cardNumber || !expiry || !cvc || !cardName) {
         alert('모든 카드 정보를 입력해주세요.');
         return;
@@ -412,30 +455,88 @@ function processPayment() {
         return;
     }
 
-    // 결제 처리 시뮬레이션
     const btn = document.querySelector('#paymentModal .btn-primary');
     btn.textContent = '처리 중...';
     btn.disabled = true;
 
     setTimeout(() => {
         currentUser.plan = plan;
-        const planName = plan === 'pro' ? 'Pro' : 'Enterprise';
         document.getElementById('currentPlanName').textContent = planName;
-
         closeModal('paymentModal');
-        btn.textContent = '결제하기';
+        btn.textContent = '💳 카드 결제하기';
         btn.disabled = false;
-
-        // 카드 정보 초기화
-        document.getElementById('cardNumber').value = '';
-        document.getElementById('cardExpiry').value = '';
-        document.getElementById('cardCVC').value = '';
-        document.getElementById('cardName').value = '';
-
+        clearCardInputs();
         showNotification(`🎉 ${planName} 플랜 결제가 완료되었습니다!`);
         renderAgents();
         renderUserAgents();
     }, 2000);
+}
+
+// 토스페이먼츠 결제
+function processTossPayment(plan, planName, price) {
+    const btn = document.querySelector('#paymentModal .btn-primary');
+    btn.textContent = '토스페이먼츠 연결 중...';
+    btn.disabled = true;
+
+    // 토스페이먼츠 API 호출 (실제 연동 시 사용)
+    // 현재는 데모로 시뮬레이션
+    setTimeout(() => {
+        // 실제 구현 시: TossPayments SDK 호출
+        // tossPayments.requestPayment('카드', { ... })
+
+        alert(`토스페이먼츠 결제 페이지로 이동합니다.\n\n플랜: ${planName}\n금액: ₩${price}\n\n※ 실제 연동을 위해서는 토스페이먼츠 가맹점 등록이 필요합니다.`);
+
+        currentUser.plan = plan;
+        document.getElementById('currentPlanName').textContent = planName;
+        closeModal('paymentModal');
+        btn.textContent = '🔵 토스페이먼츠로 결제';
+        btn.disabled = false;
+        showNotification(`🎉 ${planName} 플랜 결제가 완료되었습니다!`);
+        renderAgents();
+        renderUserAgents();
+    }, 1500);
+}
+
+// 계좌이체 처리
+function processBankTransfer(plan, planName) {
+    const depositorName = document.getElementById('depositorName').value;
+
+    if (!depositorName) {
+        alert('입금자명을 입력해주세요.');
+        return;
+    }
+
+    const btn = document.querySelector('#paymentModal .btn-primary');
+    btn.textContent = '확인 요청 중...';
+    btn.disabled = true;
+
+    setTimeout(() => {
+        closeModal('paymentModal');
+        btn.textContent = '✅ 입금 완료 확인 요청';
+        btn.disabled = false;
+        document.getElementById('depositorName').value = '';
+
+        alert(`입금 확인 요청이 접수되었습니다.\n\n입금자명: ${depositorName}\n플랜: ${planName}\n\n관리자 확인 후 플랜이 활성화됩니다.\n(영업일 기준 1-2일 소요)`);
+        showNotification(`📋 ${planName} 플랜 입금 확인 요청이 접수되었습니다.`);
+    }, 1000);
+}
+
+// 카드 입력 초기화
+function clearCardInputs() {
+    document.getElementById('cardNumber').value = '';
+    document.getElementById('cardExpiry').value = '';
+    document.getElementById('cardCVC').value = '';
+    document.getElementById('cardName').value = '';
+}
+
+// 계좌번호 복사
+function copyAccountNumber() {
+    const accountNumber = '123-456-789012';
+    navigator.clipboard.writeText(accountNumber).then(() => {
+        showNotification('📋 계좌번호가 복사되었습니다!');
+    }).catch(() => {
+        alert('계좌번호: ' + accountNumber);
+    });
 }
 
 // 카드 번호 포맷팅

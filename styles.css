@@ -1157,6 +1157,106 @@ textarea.input {
     gap: var(--spacing-md);
 }
 
+/* Toss Payments Styles */
+.toss-info {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.toss-logo {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.toss-info h4 {
+    font-size: 1.5rem;
+    color: #0064FF;
+    margin-bottom: var(--spacing-sm);
+}
+
+.toss-info p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.toss-features {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.toss-features li {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.toss-notice {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+}
+
+/* Bank Transfer Styles */
+.bank-info h4 {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.3rem;
+}
+
+.account-box {
+    background: linear-gradient(135deg, rgba(255, 230, 0, 0.1), rgba(255, 200, 0, 0.1));
+    border: 2px solid rgba(255, 200, 0, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.account-bank {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #FEE500;
+    margin-bottom: var(--spacing-xs);
+}
+
+.account-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-family: 'Outfit', monospace;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    letter-spacing: 2px;
+}
+
+.account-holder {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.btn-copy {
+    background: rgba(255, 200, 0, 0.2);
+    border: 1px solid rgba(255, 200, 0, 0.4);
+    color: #FEE500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition-base);
+}
+
+.btn-copy:hover {
+    background: rgba(255, 200, 0, 0.3);
+}
+
+.bank-notice {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: var(--spacing-md);
+}
+
 .payment-notice {
     background: var(--bg-tertiary);
     border-radius: var(--radius-md);
