@@ -30,7 +30,7 @@ let agents = [
         description: '경쟁이 낮고 수요가 높은 시니어 니치 주제를 발굴하고 콘텐츠를 자동 생성합니다.',
         icon: '🎯',
         category: '시니어',
-        type: 'free',
+        type: 'premium',
         hasPage: true,
         pageUrl: 'senior-agent.html'
     }
