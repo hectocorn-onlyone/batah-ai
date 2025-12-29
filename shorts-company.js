@@ -164,28 +164,41 @@ async function callGemini(systemPrompt, userMessage, memory = []) {
         memoryContext = '\n\n[이전 작업 기억]\n' + memory.slice(-5).map(m => m.content).join('\n');
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${currentState.apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{
-                parts: [{
-                    text: systemPrompt + memoryContext + '\n\n[현재 요청]\n' + userMessage
-                }]
-            }],
-            generationConfig: {
-                temperature: 0.8,
-                maxOutputTokens: 1024
-            }
-        })
-    });
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentState.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: systemPrompt + memoryContext + '\n\n[현재 요청]\n' + userMessage
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.8,
+                    maxOutputTokens: 1024
+                }
+            })
+        });
 
-    if (!response.ok) {
-        throw new Error('API 호출 실패');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('API Error:', errorData);
+            throw new Error(errorData.error?.message || `API 호출 실패 (${response.status})`);
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!text) {
+            throw new Error('AI 응답이 비어있습니다.');
+        }
+
+        return text;
+    } catch (error) {
+        console.error('Gemini API Error:', error);
+        throw error;
     }
-
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
 // 채팅 메시지 추가
