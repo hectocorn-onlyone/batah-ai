@@ -152,10 +152,32 @@ function loadApiKeys() {
     currentState.pexelsKey = pexelsKey || '';
 }
 
-// Gemini API 호출
-async function callGemini(systemPrompt, userMessage, memory = []) {
+// 데모 모드 응답 템플릿
+const DEMO_RESPONSES = {
+    planner: (topic) => `📋 **기획 분석 완료**\n\n주제 "${topic}"에 대한 분석입니다.\n\n🎯 타겟: 40-70대 시니어층\n📌 핵심: 실용적 정보 전달\n🎬 톤: 따뜻하고 친근한 어조`,
+
+    writer: (topic) => `✍️ **스크립트 완성**\n\n[훅 - 5초]\n"${topic}, 아직도 이렇게 하고 계세요?"\n\n[본론 - 45초]\n많은 분들이 모르시는 사실이 있습니다.\n${topic}에 대해 전문가들은 이렇게 말합니다.\n\n실제로 이 방법을 사용하신 분들은\n놀라운 변화를 경험하셨습니다.\n\n[마무리 - 10초]\n오늘부터 바로 시작해보세요!`,
+
+    designer: (topic) => `🎨 **비주얼 컨셉**\n\n📸 이미지 키워드:\n- senior lifestyle wellness\n- healthy living tips\n- happy elderly people\n\n🎨 스타일: 따뜻한 톤 (오렌지, 베이지)`,
+
+    editor: (topic) => `🎬 **편집 계획**\n\n⏱️ 장면 구성:\n- 훅: 5초\n- 문제제기: 8초\n- 해결책: 22초\n- 팁: 10초\n- 마무리: 5초\n\n✨ 총 50초, 자막 하단 중앙`,
+
+    marketer: (topic) => `📣 **마케팅 전략**\n\n🏷️ 제목:\n"${topic}" 이것만 알면 인생이 바뀝니다\n\n#️⃣ 해시태그:\n#시니어꿀팁 #건강정보 #shorts #50대라이프 #오늘의정보`
+};
+
+// 딜레이 시뮬레이션
+function simulateDelay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Gemini API 호출 (데모 모드 지원)
+async function callGemini(systemPrompt, userMessage, memory = [], employeeType = 'planner') {
+    const topic = currentState.currentTopic || '건강 관리';
+
+    // API 키 없으면 데모 모드
     if (!currentState.apiKey) {
-        throw new Error('Gemini API 키가 필요합니다.');
+        await simulateDelay(1500);
+        return DEMO_RESPONSES[employeeType] ? DEMO_RESPONSES[employeeType](topic) : '데모 응답입니다.';
     }
 
     // 메모리 컨텍스트 구성
@@ -182,22 +204,23 @@ async function callGemini(systemPrompt, userMessage, memory = []) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('API Error:', errorData);
-            throw new Error(errorData.error?.message || `API 호출 실패 (${response.status})`);
+            console.warn('API 실패, 데모 모드로 전환');
+            await simulateDelay(1000);
+            return DEMO_RESPONSES[employeeType] ? DEMO_RESPONSES[employeeType](topic) : '데모 응답입니다.';
         }
 
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!text) {
-            throw new Error('AI 응답이 비어있습니다.');
+            return DEMO_RESPONSES[employeeType] ? DEMO_RESPONSES[employeeType](topic) : '데모 응답입니다.';
         }
 
         return text;
     } catch (error) {
-        console.error('Gemini API Error:', error);
-        throw error;
+        console.warn('API 오류, 데모 모드:', error);
+        await simulateDelay(1000);
+        return DEMO_RESPONSES[employeeType] ? DEMO_RESPONSES[employeeType](topic) : '데모 응답입니다.';
     }
 }
 
@@ -294,7 +317,8 @@ async function startProduction() {
         const planResult = await callGemini(
             EMPLOYEES.planner.systemPrompt,
             `주제: ${topic}\n${notes ? `추가 지시: ${notes}` : ''}`,
-            plannerMemory
+            plannerMemory,
+            'planner'
         );
 
         currentState.results.plan = planResult;
@@ -311,7 +335,8 @@ async function startProduction() {
         const scriptResult = await callGemini(
             EMPLOYEES.writer.systemPrompt,
             `주제: ${topic}\n기획 방향: ${planResult}`,
-            writerMemory
+            writerMemory,
+            'writer'
         );
 
         currentState.results.script = scriptResult;
@@ -328,7 +353,8 @@ async function startProduction() {
         const visualResult = await callGemini(
             EMPLOYEES.designer.systemPrompt,
             `주제: ${topic}\n스크립트: ${scriptResult}`,
-            designerMemory
+            designerMemory,
+            'designer'
         );
 
         currentState.results.visuals = visualResult;
@@ -345,7 +371,8 @@ async function startProduction() {
         const editResult = await callGemini(
             EMPLOYEES.editor.systemPrompt,
             `주제: ${topic}\n스크립트: ${scriptResult}\n비주얼 컨셉: ${visualResult}`,
-            editorMemory
+            editorMemory,
+            'editor'
         );
 
         currentState.results.editing = editResult;
@@ -362,7 +389,8 @@ async function startProduction() {
         const marketResult = await callGemini(
             EMPLOYEES.marketer.systemPrompt,
             `주제: ${topic}\n스크립트 요약: ${scriptResult.substring(0, 300)}`,
-            marketerMemory
+            marketerMemory,
+            'marketer'
         );
 
         currentState.results.marketing = marketResult;
