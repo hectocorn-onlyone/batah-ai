@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 AI 쇼츠 제작 회사 - batah ai</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="shorts-company.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="company-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="back-link">← 홈으로</a>
+                <h1 class="company-title">🎬 AI 쇼츠 제작 회사</h1>
+                <p class="company-subtitle">5명의 AI 직원들이 협업하여 쇼츠를 제작합니다</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="company-main">
+        <div class="container">
+            <!-- API Settings -->
+            <section class="api-settings collapsed" id="apiSettings">
+                <div class="settings-header" onclick="toggleApiSettings()">
+                    <h3>⚙️ API 설정</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="settings-body">
+                    <div class="form-group">
+                        <label>Gemini API 키</label>
+                        <input type="password" id="geminiApiKey" placeholder="AIza..." class="input">
+                        <small>Gemini API 키가 필요합니다. <a href="https://makersuite.google.com/app/apikey" target="_blank">키
+                                발급받기</a></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Pexels API 키 (선택)</label>
+                        <input type="password" id="pexelsApiKey" placeholder="무료 이미지 검색용" class="input">
+                        <small>무료 스톡 이미지 사용. <a href="https://www.pexels.com/api/" target="_blank">키 발급받기</a></small>
+                    </div>
+                    <button class="btn-primary" onclick="saveApiKeys()">설정 저장</button>
+                </div>
+            </section>
+
+            <!-- CEO Input Section -->
+            <section class="ceo-section">
+                <div class="ceo-card">
+                    <div class="ceo-avatar">👔</div>
+                    <div class="ceo-info">
+                        <h2>대표님 (CEO)</h2>
+                        <p>쇼츠 주제를 입력해주세요</p>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="topicInput" placeholder="예: 시니어를 위한 건강 관리 팁" class="topic-input">
+                    <textarea id="additionalNotes" placeholder="추가 지시사항 (선택)" class="notes-input"></textarea>
+                    <button class="btn-start" id="startBtn" onclick="startProduction()">
+                        <span class="btn-icon">🚀</span>
+                        <span>쇼츠 제작 시작</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Meeting Room -->
+            <section class="meeting-room" id="meetingRoom">
+                <h3 class="section-title">💬 회의실</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-status" id="progressStatus">대기 중...</div>
+
+                <div class="chat-container" id="chatContainer">
+                    <!-- Chat messages will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Employees Section -->
+            <section class="employees-section">
+                <h3 class="section-title">👥 직원들</h3>
+                <div class="employees-grid">
+                    <div class="employee-card" data-employee="planner">
+                        <div class="employee-avatar">📋</div>
+                        <div class="employee-name">기획팀장</div>
+                        <div class="employee-status" id="plannerStatus">대기</div>
+                        <div class="memory-count">기억: <span id="plannerMemory">0</span></div>
+                    </div>
+                    <div class="employee-card" data-employee="writer">
+                        <div class="employee-avatar">✍️</div>
+                        <div class="employee-name">작가</div>
+                        <div class="employee-status" id="writerStatus">대기</div>
+                        <div class="memory-count">기억: <span id="writerMemory">0</span></div>
+                    </div>
+                    <div class="employee-card" data-employee="designer">
+                        <div class="employee-avatar">🎨</div>
+                        <div class="employee-name">디자이너</div>
+                        <div class="employee-status" id="designerStatus">대기</div>
+                        <div class="memory-count">기억: <span id="designerMemory">0</span></div>
+                    </div>
+                    <div class="employee-card" data-employee="editor">
+                        <div class="employee-avatar">🎬</div>
+                        <div class="employee-name">편집자</div>
+                        <div class="employee-status" id="editorStatus">대기</div>
+                        <div class="memory-count">기억: <span id="editorMemory">0</span></div>
+                    </div>
+                    <div class="employee-card" data-employee="marketer">
+                        <div class="employee-avatar">📣</div>
+                        <div class="employee-name">마케터</div>
+                        <div class="employee-status" id="marketerStatus">대기</div>
+                        <div class="memory-count">기억: <span id="marketerMemory">0</span></div>
+                    </div>
+                </div>
+                <button class="btn-secondary" onclick="clearAllMemory()">🗑️ 모든 기억 초기화</button>
+            </section>
+
+            <!-- Video Preview Section -->
+            <section class="video-section hidden" id="videoSection">
+                <h3 class="section-title">🎥 쇼츠 영상</h3>
+
+                <div class="video-preview">
+                    <canvas id="videoCanvas" width="1080" height="1920"></canvas>
+                    <div class="video-controls">
+                        <button class="btn-preview" onclick="previewVideo()">▶️ 미리보기</button>
+                        <button class="btn-primary" onclick="generateVideo()">📥 MP4 다운로드</button>
+                    </div>
+                </div>
+
+                <div class="script-preview" id="scriptPreview">
+                    <h4>📝 스크립트</h4>
+                    <div class="script-content" id="scriptContent"></div>
+                </div>
+
+                <div class="metadata-preview">
+                    <div class="metadata-item">
+                        <label>제목</label>
+                        <div id="videoTitle" class="metadata-value"></div>
+                    </div>
+                    <div class="metadata-item">
+                        <label>해시태그</label>
+                        <div id="videoHashtags" class="metadata-value"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section">
+                <h3 class="section-title">📜 제작 히스토리</h3>
+                <div class="history-list" id="historyList">
+                    <p class="empty-history">아직 제작된 쇼츠가 없습니다.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="shorts-company.js"></script>
+    <script src="shorts-video-generator.js"></script>
+</body>
+
+</html>

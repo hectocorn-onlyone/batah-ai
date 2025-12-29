@@ -33,6 +33,16 @@ let agents = [
         type: 'premium',
         hasPage: true,
         pageUrl: 'senior-agent.html'
+    },
+    {
+        id: 2,
+        name: 'AI 쇼츠 제작 회사',
+        description: '5명의 AI 직원들이 협업하여 쇼츠 영상을 제작합니다. 각 직원은 작업 내용을 기억합니다.',
+        icon: '🏢',
+        category: '비디오',
+        type: 'premium',
+        hasPage: true,
+        pageUrl: 'shorts-company.html'
     }
 ];
 
