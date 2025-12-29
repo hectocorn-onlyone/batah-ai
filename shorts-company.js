@@ -292,11 +292,7 @@ async function startProduction() {
         return;
     }
 
-    if (!currentState.apiKey) {
-        alert('먼저 Gemini API 키를 설정해주세요.');
-        toggleApiSettings();
-        return;
-    }
+    // API 키 없으면 데모 모드로 진행 (체크 제거)
 
     // 시작
     currentState.isProducing = true;
