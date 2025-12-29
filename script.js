@@ -26,83 +26,11 @@ function savePaymentRequests() {
 let agents = [
     {
         id: 1,
-        name: 'AI 쇼츠 제작 에이전트',
-        description: 'YouTube 쇼츠, 틱톡, 릴스를 자동으로 생성하는 AI 에이전트입니다.',
-        icon: '🎬',
-        category: '비디오',
-        type: 'free'
-    },
-    {
-        id: 2,
-        name: '블로그 콘텐츠 생성기',
-        description: 'SEO 최적화된 블로그 포스트를 자동으로 작성합니다.',
-        icon: '✍️',
-        category: '글쓰기',
-        type: 'free'
-    },
-    {
-        id: 3,
-        name: '소셜 미디어 매니저',
-        description: '여러 SNS 플랫폼에 최적화된 콘텐츠를 자동 생성하고 예약합니다.',
-        icon: '📱',
-        category: '소셜미디어',
-        type: 'premium'
-    },
-    {
-        id: 4,
-        name: '썸네일 디자이너',
-        description: '클릭을 유도하는 매력적인 썸네일을 AI로 디자인합니다.',
-        icon: '🎨',
-        category: '디자인',
-        type: 'premium'
-    },
-    {
-        id: 5,
-        name: '자막 생성 에이전트',
-        description: '동영상에 자동으로 자막을 생성하고 번역합니다.',
-        icon: '💬',
-        category: '비디오',
-        type: 'free'
-    },
-    {
-        id: 6,
-        name: '음성 합성 에이전트',
-        description: '자연스러운 AI 음성으로 나레이션을 생성합니다.',
-        icon: '🎙️',
-        category: '오디오',
-        type: 'premium'
-    },
-    {
-        id: 7,
-        name: '트렌드 분석기',
-        description: '실시간 트렌드를 분석하여 바이럴 가능성 높은 주제를 추천합니다.',
-        icon: '📊',
-        category: '분석',
-        type: 'premium'
-    },
-    {
-        id: 8,
-        name: '이미지 생성 AI',
-        description: '텍스트 설명만으로 고품질 이미지를 생성합니다.',
-        icon: '🖼️',
-        category: '디자인',
-        type: 'premium'
-    },
-    {
-        id: 9,
-        name: '해시태그 추천기',
-        description: 'SNS 도달률을 높이는 최적의 해시태그를 추천합니다.',
-        icon: '#️⃣',
-        category: '소셜미디어',
-        type: 'free'
-    },
-    {
-        id: 10,
         name: '시니어 주제 발굴기',
         description: '경쟁이 낮고 수요가 높은 시니어 니치 주제를 발굴하고 콘텐츠를 자동 생성합니다.',
         icon: '🎯',
         category: '시니어',
-        type: 'premium',
+        type: 'free',
         hasPage: true,
         pageUrl: 'senior-agent.html'
     }
