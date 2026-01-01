@@ -1131,3 +1131,54 @@
     margin-bottom: var(--spacing-sm);
     opacity: 0.6;
 }
+
+/* Loading States */
+.loading-topics,
+.script-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.loading-spinner {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    margin-bottom: var(--spacing-sm);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-topics p,
+.script-loading {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+}
+
+/* AI Badge for topics */
+.topic-item.ai-generated::after {
+    content: '✨ AI';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.65rem;
+    background: linear-gradient(135deg, #8a2be2 0%, #9400d3 100%);
+    color: white;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+}
+
+.topic-item {
+    position: relative;
+}

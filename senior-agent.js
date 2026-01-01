@@ -1385,41 +1385,143 @@ function generateDynamicTopic(category, index) {
     };
 }
 
-// ===== 주제 생성 (개선됨) =====
-function generateTopics() {
+// ===== 주제 생성 (Gemini API 연동) =====
+async function generateTopics() {
+    const container = document.getElementById('topicsList');
+    const btn = document.querySelector('.btn-generate');
+
+    // 로딩 상태
+    container.innerHTML = `
+        <div class="loading-topics">
+            <div class="loading-spinner">🔄</div>
+            <p>AI가 니치 주제를 분석 중입니다...</p>
+        </div>
+    `;
+    if (btn) btn.disabled = true;
+
+    const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
+
+    try {
+        let topics = [];
+
+        // Gemini API로 고품질 주제 생성
+        if (geminiApiKey) {
+            topics = await generateTopicsWithGemini(currentCategory, categoryName);
+        }
+
+        // API 없거나 실패시 기존 로직
+        if (topics.length === 0) {
+            topics = generateLocalTopics();
+        }
+
+        currentTopics = topics.slice(0, 8);
+        renderTopics();
+
+    } catch (error) {
+        console.error('Topic generation error:', error);
+        currentTopics = generateLocalTopics().slice(0, 8);
+        renderTopics();
+    }
+
+    if (btn) btn.disabled = false;
+}
+
+// Gemini API로 주제 생성
+async function generateTopicsWithGemini(category, categoryName) {
+    const prompt = `당신은 YouTube 시니어 콘텐츠 전문가입니다.
+한국 시니어(50-70대) 대상 "${categoryName}" 분야의 니치 콘텐츠 주제 8개를 추천해주세요.
+
+요구사항:
+1. 경쟁이 적은 블루오션 주제
+2. 시니어들의 실제 고민과 니즈 반영
+3. 클릭하고 싶어지는 구체적인 제목
+4. 감정을 자극하는 표현 사용
+5. 수익화 가능성 높은 주제
+
+다음 JSON 형식으로만 응답 (설명 없이 JSON만):
+[{
+  "title": "구체적인 콘텐츠 제목",
+  "icon": "관련 이모지",
+  "reason": "왜 이 주제가 좋은지 3문장 설명",
+  "targetAudience": "구체적인 타겟 시청자",
+  "keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"],
+  "blueOcean": 블루오션점수(75-95),
+  "competition": "경쟁도(매우 낮음/낮음/중간)",
+  "views": "예상 월 조회수",
+  "revenue": "예상 월 수익",
+  "growth": "성장 가능성"
+}]`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.9, maxOutputTokens: 2048 }
+                })
+            }
+        );
+
+        if (!response.ok) throw new Error('Gemini API 오류');
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+            const topics = JSON.parse(jsonMatch[0]);
+            return topics.map((t, i) => ({
+                id: 2000 + i,
+                title: t.title,
+                icon: t.icon || '📌',
+                reason: t.reason,
+                targetAudience: t.targetAudience,
+                keywords: t.keywords || [],
+                blueOcean: t.blueOcean || 80,
+                competition: t.competition || '낮음',
+                views: t.views || '10만~30만',
+                revenue: t.revenue || '50만~150만원',
+                growth: t.growth || '안정적',
+                isAI: true
+            }));
+        }
+    } catch (error) {
+        console.warn('Gemini 주제 생성 실패:', error);
+    }
+
+    return [];
+}
+
+// 로컬 주제 생성 (폴백)
+function generateLocalTopics() {
     let topics = [];
     const categories = ['story', 'health', 'history', 'finance', 'hobby'];
 
     if (currentCategory === 'all') {
-        // 각 카테고리에서 기존 주제 1개 + 동적 주제 1개
         categories.forEach((cat, catIndex) => {
             const catTopics = topicsDatabase[cat];
             if (catTopics && catTopics.length > 0) {
-                // 기존 주제 랜덤 1개
                 const randomExisting = catTopics[Math.floor(Math.random() * catTopics.length)];
                 topics.push(randomExisting);
             }
-            // 동적 생성 주제 1개
             topics.push(generateDynamicTopic(cat, catIndex));
         });
     } else if (topicsDatabase[currentCategory]) {
-        // 특정 카테고리: 기존 주제 일부 + 동적 주제 다수
         const catTopics = [...topicsDatabase[currentCategory]];
         const shuffled = catTopics.sort(() => Math.random() - 0.5);
         topics.push(...shuffled.slice(0, 3));
 
-        // 동적 주제 5개 추가
         for (let i = 0; i < 5; i++) {
             topics.push(generateDynamicTopic(currentCategory, i));
         }
     } else {
-        // 커스텀 카테고리의 경우
         topics = topicsDatabase[currentCategory] || [];
     }
 
-    // 랜덤 셔플 후 8개 선택
-    currentTopics = topics.sort(() => Math.random() - 0.5).slice(0, 8);
-    renderTopics();
+    return topics.sort(() => Math.random() - 0.5);
 }
 
 // ===== 주제 렌더링 =====
@@ -1515,23 +1617,153 @@ function updateRevenueInfo() {
     document.getElementById('growthPotential').textContent = selectedTopic.growth;
 }
 
-// ===== 스크립트 생성 =====
-function generateScript() {
-    const category = getCategoryFromId(selectedTopic.id);
-    let script = '';
+// ===== 스크립트 생성 (Gemini API 연동) =====
+async function generateScript() {
+    const container = document.getElementById('scriptContent');
+    container.innerHTML = '<div class="script-loading">🔄 AI가 고품질 스크립트를 작성 중입니다...</div>';
 
-    if (currentContentType === 'shorts') {
-        script = generateShortsScript(category);
-    } else {
-        script = generateLongScript(category);
+    const category = getCategoryFromId(selectedTopic.id);
+
+    try {
+        let script = '';
+
+        // Gemini API로 고품질 스크립트 생성
+        if (geminiApiKey) {
+            script = await generateScriptWithGemini(category);
+        }
+
+        // API 없거나 실패시 기존 로직
+        if (!script) {
+            if (currentContentType === 'shorts') {
+                script = generateLocalShortsScript(category);
+            } else {
+                script = generateLocalLongScript(category);
+            }
+        }
+
+        document.getElementById('scriptContent').textContent = script;
+        await generateThumbnailsWithAI();
+
+    } catch (error) {
+        console.error('Script generation error:', error);
+        const fallbackScript = currentContentType === 'shorts'
+            ? generateLocalShortsScript(category)
+            : generateLocalLongScript(category);
+        document.getElementById('scriptContent').textContent = fallbackScript;
+        generateThumbnails();
+    }
+}
+
+// Gemini API로 스크립트 생성
+async function generateScriptWithGemini(category) {
+    const contentType = currentContentType === 'shorts' ? '60초 쇼츠' : '10분 롱폼';
+    const categoryName = CATEGORY_NAMES[category] || '시니어';
+
+    const prompt = `당신은 한국 시니어 대상 YouTube 콘텐츠 전문 작가입니다.
+다음 주제로 ${contentType} 스크립트를 작성해주세요.
+
+📌 주제: ${selectedTopic.title}
+📂 카테고리: ${categoryName}
+👤 타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
+🔑 키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
+
+작성 원칙:
+1. 첫 3초에 강력한 훅으로 시청자를 사로잡기
+2. 시니어가 공감할 수 있는 따뜻하고 진정성 있는 어투
+3. 구체적인 정보와 실용적인 팁 포함
+4. 감정을 자극하는 스토리텔링
+5. 마지막에 구독 유도 CTA
+
+${currentContentType === 'shorts' ? `
+쇼츠 구조:
+[훅 - 0~3초] 시청자 집중 문장
+[전개 - 3~30초] 핵심 내용 전달
+[클라이맥스 - 30~50초] 가장 중요한 메시지
+[마무리 - 50~60초] CTA와 다음 예고
+` : `
+롱폼 구조:
+[인트로 - 0~30초] 인사와 주제 소개
+[왜 중요한가 - 30초~2분] 주제의 중요성
+[본론 1 - 2분~4분] 첫 번째 핵심 포인트
+[본론 2 - 4분~6분] 두 번째 핵심 포인트
+[본론 3 - 6분~8분] 세 번째 핵심 포인트
+[정리 - 8분~9분] 핵심 요약
+[아웃트로 - 9분~10분] 마무리 인사와 CTA
+`}
+
+스크립트만 작성해주세요 (설명 없이):`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        temperature: 0.8,
+                        maxOutputTokens: currentContentType === 'shorts' ? 1024 : 2048
+                    }
+                })
+            }
+        );
+
+        if (!response.ok) throw new Error('Gemini API 오류');
+
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    } catch (error) {
+        console.warn('Gemini 스크립트 생성 실패:', error);
+        return '';
+    }
+}
+
+// AI 썸네일 제안
+async function generateThumbnailsWithAI() {
+    if (!geminiApiKey) {
+        generateThumbnails();
+        return;
     }
 
-    document.getElementById('scriptContent').textContent = script;
+    try {
+        const prompt = `"${selectedTopic.title}" 주제의 YouTube 썸네일 문구 4개를 추천해주세요.
+클릭을 유도하는 강력한 문구로, 각 문구는 10자 이내로 작성해주세요.
+JSON 배열로만 응답: ["문구1", "문구2", "문구3", "문구4"]`;
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.9 }
+                })
+            }
+        );
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+
+        if (jsonMatch) {
+            const thumbnails = JSON.parse(jsonMatch[0]);
+            document.getElementById('thumbnailSuggestions').innerHTML = thumbnails
+                .map(t => `<div class="thumb-item">${t}</div>`)
+                .join('');
+            return;
+        }
+    } catch (error) {
+        console.warn('AI 썸네일 생성 실패:', error);
+    }
+
     generateThumbnails();
 }
 
-// ===== 쇼츠 스크립트 생성 =====
-function generateShortsScript(category) {
+// ===== 쇼츠 스크립트 생성 (로컬) =====
+function generateLocalShortsScript(category) {
     const hooks = {
         story: [
             `"${selectedTopic.title.split(',')[0]}..."`,
@@ -1583,8 +1815,8 @@ ${selectedTopic.keywords.slice(0, 3).map(k => `#${k}`).join(' ')}
 다음 이야기도 기대해주세요!`;
 }
 
-// ===== 롱폼 스크립트 생성 =====
-function generateLongScript(category) {
+// ===== 롱폼 스크립트 생성 (로컬) =====
+function generateLocalLongScript(category) {
     return `[인트로 - 0~30초]
 안녕하세요, 반갑습니다.
 오늘은 "${selectedTopic.title}"에 대해 이야기해보려고 합니다.
