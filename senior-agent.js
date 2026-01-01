@@ -580,6 +580,7 @@ let currentContentType = 'shorts';
 // ===== 초기화 =====
 document.addEventListener('DOMContentLoaded', function () {
     loadSavedCategories(); // 저장된 카테고리 먼저 로드
+    loadApiSettings(); // API 키 로드
     setupCategoryButtons();
     generateTopics();
     renderDiscoveryEmpty();
@@ -629,49 +630,247 @@ function setupCategoryButtons() {
     });
 }
 
-// ===== 카테고리 발굴 기능 =====
+// ===== API 키 관리 =====
+let youtubeApiKey = localStorage.getItem('youtube_api_key') || '';
+let geminiApiKey = localStorage.getItem('gemini_api_key') || '';
+let currentDiscoveryType = 'niche'; // 'niche', 'mass', 'both'
+
+// API 설정 토글
+function toggleApiSettings() {
+    const body = document.getElementById('apiSettingsBody');
+    const arrow = document.getElementById('apiToggleArrow');
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        arrow.classList.add('open');
+    } else {
+        body.style.display = 'none';
+        arrow.classList.remove('open');
+    }
+}
+
+// API 설정 저장
+function saveApiSettings() {
+    youtubeApiKey = document.getElementById('youtubeApiKey').value.trim();
+    geminiApiKey = document.getElementById('geminiApiKey').value.trim();
+    localStorage.setItem('youtube_api_key', youtubeApiKey);
+    localStorage.setItem('gemini_api_key', geminiApiKey);
+    showToast('✅ API 설정이 저장되었습니다!');
+    toggleApiSettings();
+}
+
+// API 설정 로드
+function loadApiSettings() {
+    document.getElementById('youtubeApiKey').value = youtubeApiKey;
+    document.getElementById('geminiApiKey').value = geminiApiKey;
+}
+
+// 발굴 타입 선택
+function setDiscoveryType(type) {
+    currentDiscoveryType = type;
+    document.querySelectorAll('.discovery-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+}
+
+// ===== 카테고리 발굴 기능 (API 연동) =====
 let discoveryCount = 0;
 
-function discoverCategories() {
+async function discoverCategories() {
+    const btn = document.querySelector('.btn-discover');
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="discover-icon">🔄</span> 트렌드 분석 중...';
+
     discoveryCount++;
 
-    // 이미 추가된 카테고리 제외
-    const addedIds = customCategories.map(c => c.id);
-    const availableCategories = discoveryCategories.filter(c => !addedIds.includes(c.id));
+    try {
+        let categories = [];
 
-    // 발굴 횟수에 따라 다른 전략 사용
-    let selectedCategories = [];
-
-    if (discoveryCount % 3 === 1) {
-        // 블루오션 점수 높은 순
-        selectedCategories = [...availableCategories]
-            .sort((a, b) => b.blueOcean - a.blueOcean)
-            .slice(0, 6);
-        showToast('🔥 블루오션 TOP 카테고리를 발굴했습니다!');
-    } else if (discoveryCount % 3 === 2) {
-        // 수익 잠재력 높은 순
-        selectedCategories = [...availableCategories]
-            .sort((a, b) => {
-                const getMax = (str) => parseInt(str.match(/\d+/g)?.[1] || 0);
-                return getMax(b.avgRevenue) - getMax(a.avgRevenue);
-            })
-            .slice(0, 6);
-        showToast('💰 고수익 카테고리를 발굴했습니다!');
-    } else {
-        // 랜덤 + 동적 생성 카테고리 추가
-        const shuffled = [...availableCategories].sort(() => Math.random() - 0.5);
-        selectedCategories = shuffled.slice(0, 5);
-
-        // 동적으로 새 카테고리 생성
-        const dynamicCategory = generateDynamicCategory();
-        if (dynamicCategory) {
-            selectedCategories.push(dynamicCategory);
+        // YouTube API로 트렌드 분석
+        if (youtubeApiKey) {
+            const trendData = await fetchYouTubeTrends();
+            if (trendData && trendData.length > 0) {
+                // Gemini API로 카테고리 분석
+                if (geminiApiKey) {
+                    categories = await analyzeWithGemini(trendData);
+                } else {
+                    categories = processYouTubeData(trendData);
+                }
+            }
         }
-        showToast('✨ 새로운 트렌드 카테고리를 발굴했습니다!');
+
+        // API 없거나 실패시 기본 로직
+        if (categories.length === 0) {
+            categories = getLocalCategories();
+        }
+
+        // 발굴 타입에 따라 필터링
+        categories = filterByDiscoveryType(categories);
+
+        discoveredCategoryList = categories.slice(0, 6);
+        renderDiscoveredCategories();
+
+        const typeNames = { niche: '니치형', mass: '대중형', both: '균형' };
+        showToast(`✨ ${typeNames[currentDiscoveryType]} 카테고리 ${discoveredCategoryList.length}개 발굴!`);
+
+    } catch (error) {
+        console.error('Discovery error:', error);
+        // 폴백: 기본 카테고리 사용
+        discoveredCategoryList = getLocalCategories().slice(0, 6);
+        renderDiscoveredCategories();
+        showToast('⚠️ API 오류로 기본 카테고리를 표시합니다.');
     }
 
-    discoveredCategoryList = selectedCategories;
-    renderDiscoveredCategories();
+    btn.classList.remove('loading');
+    btn.innerHTML = '<span class="discover-icon">✨</span> AI 트렌드 분석 발굴';
+}
+
+// YouTube Data API로 시니어 관련 트렌드 가져오기
+async function fetchYouTubeTrends() {
+    const searchQueries = ['시니어', '60대', '70대', '건강', '노후', '은퇴'];
+    const query = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+
+    try {
+        const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=10&order=viewCount&relevanceLanguage=ko&regionCode=KR&key=${youtubeApiKey}`
+        );
+
+        if (!response.ok) throw new Error('YouTube API 오류');
+
+        const data = await response.json();
+        return data.items?.map(item => ({
+            title: item.snippet.title,
+            description: item.snippet.description,
+            channelTitle: item.snippet.channelTitle
+        })) || [];
+    } catch (error) {
+        console.warn('YouTube API 실패:', error);
+        return [];
+    }
+}
+
+// Gemini API로 트렌드 분석
+async function analyzeWithGemini(trendData) {
+    const typePrompts = {
+        niche: '경쟁이 적고 충성도 높은 니치 시장 카테고리',
+        mass: '조회수가 높은 대중적인 인기 카테고리',
+        both: '니치형과 대중형을 균형있게 섞은 카테고리'
+    };
+
+    const prompt = `다음 YouTube 트렌드 데이터를 분석하여 한국 시니어(50-70대) 대상 콘텐츠 카테고리 6개를 추천해주세요.
+타입: ${typePrompts[currentDiscoveryType]}
+
+트렌드 데이터:
+${trendData.map(t => `- ${t.title}`).join('\n')}
+
+다음 JSON 형식으로만 응답:
+[{"name": "카테고리명", "icon": "이모지", "description": "설명", "blueOcean": 점수(70-99), "competition": "경쟁도", "avgRevenue": "예상수익", "type": "niche/mass", "sampleTopics": ["주제1", "주제2"]}]`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.9 }
+                })
+            }
+        );
+
+        if (!response.ok) throw new Error('Gemini API 오류');
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        // JSON 파싱
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+            const categories = JSON.parse(jsonMatch[0]);
+            return categories.map((c, i) => ({
+                id: `ai-${Date.now()}-${i}`,
+                name: c.name,
+                icon: c.icon || '🎯',
+                description: c.description,
+                blueOcean: c.blueOcean || 80,
+                competition: c.competition || '낮음',
+                avgRevenue: c.avgRevenue || '50만~200만원',
+                reason: c.description,
+                type: c.type || 'niche',
+                sampleTopics: c.sampleTopics || [`${c.name} 시작하기`, `${c.name} 꿀팁`],
+                isAI: true
+            }));
+        }
+    } catch (error) {
+        console.warn('Gemini API 실패:', error);
+    }
+
+    return [];
+}
+
+// YouTube 데이터를 카테고리로 변환 (Gemini 없을 때)
+function processYouTubeData(trendData) {
+    const keywords = {
+        '건강': { icon: '💊', type: 'mass' },
+        '운동': { icon: '🏃', type: 'mass' },
+        '재테크': { icon: '💰', type: 'niche' },
+        '연금': { icon: '🏦', type: 'niche' },
+        '추억': { icon: '💕', type: 'niche' },
+        '여행': { icon: '✈️', type: 'mass' },
+        '요리': { icon: '🍳', type: 'mass' },
+        '음악': { icon: '🎵', type: 'mass' }
+    };
+
+    const found = [];
+    trendData.forEach(item => {
+        for (const [key, val] of Object.entries(keywords)) {
+            if (item.title.includes(key) && !found.find(f => f.name.includes(key))) {
+                found.push({
+                    id: `yt-${Date.now()}-${found.length}`,
+                    name: `시니어 ${key}`,
+                    icon: val.icon,
+                    description: `YouTube 트렌드 기반 ${key} 카테고리`,
+                    blueOcean: 75 + Math.floor(Math.random() * 20),
+                    competition: val.type === 'niche' ? '낮음' : '중간',
+                    avgRevenue: '50만~200만원',
+                    reason: `${key} 관련 시니어 콘텐츠 수요 증가`,
+                    type: val.type,
+                    sampleTopics: [`${key} 시작하기`, `${key} 꿀팁`],
+                    isAI: true
+                });
+            }
+        }
+    });
+
+    return found;
+}
+
+// 기본 카테고리 (API 없을 때)
+function getLocalCategories() {
+    const addedIds = customCategories.map(c => c.id);
+    const available = discoveryCategories.filter(c => !addedIds.includes(c.id));
+
+    // 발굴 타입에 따라 정렬
+    if (currentDiscoveryType === 'niche') {
+        return [...available].sort((a, b) => b.blueOcean - a.blueOcean);
+    } else if (currentDiscoveryType === 'mass') {
+        return [...available].sort((a, b) => {
+            const getMax = (str) => parseInt(str.match(/\d+/g)?.[1] || 0);
+            return getMax(b.avgRevenue) - getMax(a.avgRevenue);
+        });
+    } else {
+        return [...available].sort(() => Math.random() - 0.5);
+    }
+}
+
+// 발굴 타입으로 필터링
+function filterByDiscoveryType(categories) {
+    if (currentDiscoveryType === 'niche') {
+        return categories.filter(c => c.type !== 'mass' || c.blueOcean > 85);
+    } else if (currentDiscoveryType === 'mass') {
+        return categories.filter(c => c.type !== 'niche' || c.blueOcean < 80);
+    }
+    return categories; // both: 모두 반환
 }
 
 // 동적 카테고리 생성
