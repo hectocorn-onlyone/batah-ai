@@ -1667,86 +1667,117 @@ async function generateScriptWithGemini(category) {
     const contentType = currentContentType === 'shorts' ? '60초 쇼츠' : '10분 롱폼';
     const categoryName = CATEGORY_NAMES[category] || '시니어';
 
-    const shortsPrompt = `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
+    // 사연/건강 카테고리는 낭독 형식
+    const isNarrationStyle = ['story', 'health'].includes(category);
+
+    const shortsPrompt = isNarrationStyle ?
+        `당신은 시니어 사연 낭독 채널 전문 작가입니다.
+"${selectedTopic.title}" 주제로 60초 사연 낭독 스크립트를 작성하세요.
+
+【형식: 타입캐스트 TTS용 - 깨끗한 낭독 대본만 출력】
+
+【필수 규칙】
+✅ ~해요체, 따뜻하고 감성적인 어투
+✅ 한 사람이 이야기하듯 자연스럽게
+✅ 숨 쉬는 곳에 ... 표시
+✅ 감정이 실린 부분은 천천히 읽히도록
+❌ [훅], [전개] 같은 구조 표시 금지
+❌ "3초", "25초" 같은 시간 표시 금지
+❌ 괄호 안 설명 금지
+❌ 영어/전문용어 금지
+
+【예시】
+저는 올해 68살이에요...
+40년 전, 신혼 시절 이야기를 하려고 해요.
+
+그때 저희 집은 정말 가난했어요.
+월급날이 되면... 뭘 먼저 사야 할지 고민이었죠.
+
+(이런 식으로 자연스럽게 이어지는 낭독 대본)
+
+【주제】 ${selectedTopic.title}
+【키워드】 ${selectedTopic.keywords?.join(', ') || '시니어, 감동, 공감'}
+
+위 형식대로 타입캐스트에 바로 붙여넣을 수 있는 깨끗한 낭독 대본만 작성하세요:` :
+
+        `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
 "${selectedTopic.title}" 주제로 60초 쇼츠 스크립트를 작성하세요.
 
-【필수 규칙】
-✅ ~해요체 사용 (친근하고 따뜻한 어투)
-✅ 50-70대 시니어가 100% 이해할 수 있는 쉬운 단어
-✅ 감정을 자극하는 표현 (눈물, 웃음, 공감)
-✅ 구체적인 숫자와 예시 포함
-❌ AI스러운 딱딱한 문체 절대 금지
-❌ "~입니다", "~합니다" 같은 설명체 금지
-❌ 영어/전문용어 금지
-
-【스크립트 구조】
-[훅 - 3초] (시청자가 멈춰서 듣게 만드는 충격적인 한 문장)
-예: "이걸 몰라서 10년을 고생했어요..."
-
-[전개 - 25초] (공감 → 문제 제기 → 해결책 힌트)
-- 청자의 경험과 연결되는 이야기
-- "혹시 여러분도..." 같은 질문
-
-[핵심 - 20초] (가장 중요한 메시지, 구체적 팁 3가지)
-- 숫자를 활용한 명확한 정보
-- 바로 실천할 수 있는 액션
-
-[마무리 - 12초] (감동 + CTA)
-- 따뜻한 응원 메시지
-- "구독하시면 매일 좋은 정보 받으실 수 있어요"
-
-타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
-키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
-
-위 구조대로 스크립트만 작성하세요:`;
-
-    const longPrompt = `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
-"${selectedTopic.title}" 주제로 10분 롱폼 영상 스크립트를 작성하세요.
+【형식: 타입캐스트 TTS용 - 깨끗한 대본만 출력】
 
 【필수 규칙】
 ✅ ~해요체 사용 (친근하고 따뜻한 어투)
 ✅ 50-70대 시니어가 100% 이해할 수 있는 쉬운 단어
-✅ 개인 경험담처럼 자연스럽게
-✅ 중간중간 시청자에게 질문하며 소통
-❌ AI스러운 딱딱한 문체 절대 금지
-❌ 영어/전문용어 금지
+✅ 숨 쉬는 곳에 ... 표시
+✅ 자연스러운 말투로 흘러가듯
+❌ [훅], [전개] 같은 구조 표시 금지
+❌ "3초", "25초" 같은 시간 표시 금지
+❌ 괄호 안 설명 금지
+❌ AI스러운 딱딱한 문체 금지
 
-【롱폼 스크립트 구조】
-
-[인트로 - 30초]
-"안녕하세요, 오늘도 찾아와 주셔서 고마워요."
-- 오늘 주제 예고
-- 왜 이 이야기를 하게 됐는지
-
-[공감 - 1분]
-- 시청자들이 겪고 있을 문제 언급
-- "저도 예전에 이런 경험이 있었는데요..."
-
-[본론 1 - 2분]
-- 첫 번째 핵심 정보
-- 구체적인 예시와 숫자
-
-[본론 2 - 2분]
-- 두 번째 핵심 정보
-- 실제 사례 이야기
-
-[본론 3 - 2분]
-- 세 번째 핵심 정보
-- 바로 실천할 수 있는 팁
-
-[정리 - 1분]
-- 오늘 내용 3줄 요약
-- 가장 중요한 것 강조
-
-[아웃트로 - 1분]
-- 따뜻한 응원 메시지
-- 댓글로 경험 공유 유도
-- 구독과 좋아요 부탁
+【대본 흐름】
+1. 첫 문장: 시청자가 멈춰서 듣게 만드는 충격적인 한 문장
+2. 중반: 공감 → 문제 제기 → 해결책/정보
+3. 마무리: 따뜻한 응원 + 구독 유도
 
 타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
 키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
 
-위 구조대로 자연스러운 스크립트를 작성하세요:`;
+타입캐스트에 바로 붙여넣을 수 있는 깨끗한 대본만 작성하세요:`;
+
+    const longPrompt = isNarrationStyle ?
+        `당신은 시니어 사연 낭독 채널 전문 작가입니다.
+"${selectedTopic.title}" 주제로 10분 사연 낭독 스크립트를 작성하세요.
+
+【형식: 타입캐스트 TTS용 - 깨끗한 낭독 대본만 출력】
+
+【필수 규칙】
+✅ ~해요체, 따뜻하고 감성적인 어투
+✅ 한 사람이 이야기하듯 자연스럽게
+✅ 숨 쉬는 곳에 ... 표시
+✅ 문단 사이에 빈 줄로 구분
+❌ [인트로], [본론] 같은 구조 표시 금지
+❌ "30초", "1분" 같은 시간 표시 금지
+❌ 괄호 안 설명 금지
+
+【대본 구성】
+1. 인사와 주제 소개
+2. 사연 배경 설명
+3. 본격적인 이야기 전개
+4. 감동적인 클라이맥스
+5. 교훈과 마무리 인사
+
+주제: ${selectedTopic.title}
+키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 감동, 공감'}
+
+타입캐스트에 바로 붙여넣을 수 있는 깨끗한 낭독 대본만 작성하세요:` :
+
+        `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
+"${selectedTopic.title}" 주제로 10분 롱폼 스크립트를 작성하세요.
+
+【형식: 타입캐스트 TTS용 - 깨끗한 대본만 출력】
+
+【필수 규칙】
+✅ ~해요체, 친근하고 따뜻한 어투
+✅ 50-70대 시니어가 이해할 수 있는 쉬운 단어
+✅ 숨 쉬는 곳에 ... 표시
+✅ 문단 사이에 빈 줄로 구분
+❌ [인트로], [본론] 같은 구조 표시 금지
+❌ "30초", "1분" 같은 시간 표시 금지
+❌ 괄호 안 설명 금지
+
+【대본 흐름】
+1. 인사와 오늘 주제 소개
+2. 시청자 공감 유도
+3. 첫 번째 핵심 정보
+4. 두 번째 핵심 정보
+5. 세 번째 핵심 정보
+6. 정리와 마무리 인사
+
+타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
+키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
+
+타입캐스트에 바로 붙여넣을 수 있는 깨끗한 대본만 작성하세요:`;
 
     const prompt = currentContentType === 'shorts' ? shortsPrompt : longPrompt;
 
@@ -1851,28 +1882,38 @@ async function generateAIThumbnail() {
 
     const categoryName = CATEGORY_NAMES[getCategoryFromId(selectedTopic.id)] || '시니어';
 
-    // 고품질 썸네일 프롬프트 (나노 바나나 프로 최적화)
-    const prompt = `Create a professional YouTube thumbnail image.
+    // 썸네일용 짧은 텍스트 추출 (10자 이내)
+    const shortTitle = selectedTopic.title.split(',')[0].split(' ').slice(0, 3).join(' ');
+    const clickbaitText = shortTitle.length > 12 ? shortTitle.substring(0, 12) + '...' : shortTitle;
 
-Topic: "${selectedTopic.title}"
-Category: ${categoryName}
-Target audience: Korean seniors (50-70 years old)
+    // 고품질 썸네일 프롬프트 (나노 바나나 프로 최적화 + 텍스트 포함)
+    const prompt = `Create a professional YouTube thumbnail image with Korean text.
+
+        Topic: "${selectedTopic.title}"
+    Category: ${categoryName}
+Target audience: Korean seniors(50 - 70 years old)
+
+    IMPORTANT - INCLUDE THIS TEXT IN THE IMAGE:
+Main headline(large, bold, Korean): "${clickbaitText}"
+Place the text prominently in the center or upper area of the image.
+Text should be highly readable with:
+    - Large bold font(at least 72pt equivalent)
+        - White or yellow color with dark outline / shadow
+            - High contrast against background
 
 STYLE REQUIREMENTS:
-- Professional YouTube thumbnail layout
-- Warm, trustworthy, inviting color palette (orange, gold, warm tones)
-- Clean, modern design that appeals to mature audience
-- High contrast for visibility
-- NO text overlay (we will add text separately)
+    - Professional YouTube thumbnail layout(16: 9 ratio)
+        - Warm color palette(orange, gold, warm tones)
+            - Eye - catching design that makes viewers want to click
+                - Emotional imagery related to seniors
 
 VISUAL ELEMENTS:
-- Central focal point related to the topic
-- Subtle gradient background
-- Soft lighting, warm atmosphere
-- Photorealistic quality
-- Emotional appeal for seniors
+    - Relevant background image for the topic
+        - Gradient overlay to make text pop
+            - Emotional appeal(trust, warmth, curiosity)
+                - Similar style to successful Korean senior YouTube channels
 
-Make it look like a successful Korean senior YouTube channel thumbnail.`;
+The text "${clickbaitText}" must be clearly visible and readable.`;
 
     try {
         const response = await fetch(
