@@ -626,6 +626,7 @@ function setupCategoryButtons() {
             this.classList.add('active');
             currentCategory = this.dataset.category;
             generateTopics();
+            updateNicheChannelUI(); // 니치 채널 UI 업데이트
         });
     });
 }
@@ -871,6 +872,222 @@ function filterByDiscoveryType(categories) {
         return categories.filter(c => c.type !== 'niche' || c.blueOcean < 80);
     }
     return categories; // both: 모두 반환
+}
+
+// ===== 카테고리별 니치 채널 주제 발굴 =====
+const CATEGORY_NAMES = {
+    all: '전체',
+    story: '사연/추억',
+    health: '건강정보',
+    history: '야담/역사',
+    finance: '재테크',
+    hobby: '취미/문화'
+};
+
+const NICHE_CHANNEL_TEMPLATES = {
+    story: [
+        { name: '6070 첫사랑 이야기', desc: '과거의 순수한 사랑 이야기를 공감 스토리로', potentialViews: '10만~30만' },
+        { name: '군대 시절 에피소드', desc: '남자들의 추억 군대 이야기', potentialViews: '15만~40만' },
+        { name: '시골 추억', desc: '농촌, 시골에서의 어린 시절 이야기', potentialViews: '8만~25만' },
+        { name: '직장인 추억', desc: '과거 직장생활의 에피소드', potentialViews: '7만~20만' },
+        { name: '가족 사연', desc: '부모님, 자녀와의 감동 사연', potentialViews: '12만~35만' }
+    ],
+    health: [
+        { name: '관절 건강', desc: '무릎, 허리 통증 관리 정보', potentialViews: '20만~60만' },
+        { name: '수면 건강', desc: '불면증 극복, 숙면 비법', potentialViews: '15만~45만' },
+        { name: '치매 예방', desc: '뇌 건강, 인지력 향상 팁', potentialViews: '25만~70만' },
+        { name: '혈압/당뇨 관리', desc: '만성질환 관리 정보', potentialViews: '18만~50만' },
+        { name: '시니어 운동법', desc: '집에서 하는 가벼운 운동', potentialViews: '12만~35만' }
+    ],
+    history: [
+        { name: '조선 야담', desc: '조선시대 숨겨진 이야기', potentialViews: '8만~25만' },
+        { name: '근현대사 비화', desc: '알려지지 않은 역사 이면', potentialViews: '10만~30만' },
+        { name: '6.25 실화', desc: '한국전쟁 시기 감동 이야기', potentialViews: '7만~22만' },
+        { name: '위인 재조명', desc: '역사 인물 새로운 시각', potentialViews: '9만~28만' },
+        { name: '지역 역사', desc: '우리 동네 숨겨진 역사', potentialViews: '5만~15만' }
+    ],
+    finance: [
+        { name: '연금 꿀팁', desc: '국민연금, 주택연금 노하우', potentialViews: '15만~45만' },
+        { name: '노후 재테크', desc: '안전한 투자 전략', potentialViews: '12만~38만' },
+        { name: '절세 비법', desc: '상속, 증여 세금 줄이기', potentialViews: '18만~55만' },
+        { name: '정부 지원금', desc: '시니어 혜택 총정리', potentialViews: '25만~70만' },
+        { name: '은퇴 준비', desc: '은퇴 전 챙겨야 할 것들', potentialViews: '10만~32만' }
+    ],
+    hobby: [
+        { name: '시니어 여행', desc: '숨은 여행지, 걷기 코스', potentialViews: '12만~35만' },
+        { name: '전통 요리', desc: '어머니의 손맛 레시피', potentialViews: '10만~30만' },
+        { name: '손주 육아', desc: '조부모 육아 팁', potentialViews: '8만~25만' },
+        { name: '시니어 취미', desc: '서예, 바둑, 원예 등', potentialViews: '6만~18만' },
+        { name: '트로트/음악', desc: '트로트 소식, 가수 이야기', potentialViews: '15만~45만' }
+    ]
+};
+
+// 니치 채널 발굴 함수
+async function discoverNicheChannels() {
+    const btn = document.getElementById('btnNicheDiscover');
+    const textSpan = document.getElementById('nicheDiscoverText');
+    const resultsDiv = document.getElementById('nicheChannelResults');
+
+    btn.classList.add('loading');
+    textSpan.textContent = '분석 중...';
+
+    const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
+    document.getElementById('nicheChannelSubtitle').textContent =
+        `"${categoryName}" 분야 니치 채널 주제를 발굴합니다`;
+
+    try {
+        let channels = [];
+
+        // Gemini API로 분석 (API 키가 있으면)
+        if (geminiApiKey) {
+            channels = await analyzeNicheChannelsWithGemini(currentCategory);
+        }
+
+        // API 없거나 실패시 템플릿 사용
+        if (channels.length === 0) {
+            channels = getLocalNicheChannels(currentCategory);
+        }
+
+        renderNicheChannelResults(channels);
+        showToast(`🎯 ${categoryName} 분야 니치 채널 ${channels.length}개 발굴!`);
+
+    } catch (error) {
+        console.error('Niche channel discovery error:', error);
+        const channels = getLocalNicheChannels(currentCategory);
+        renderNicheChannelResults(channels);
+        showToast('⚠️ 기본 니치 채널 주제를 표시합니다.');
+    }
+
+    btn.classList.remove('loading');
+    textSpan.textContent = '니치 채널 주제 발굴';
+}
+
+// Gemini API로 니치 채널 분석
+async function analyzeNicheChannelsWithGemini(category) {
+    const categoryName = CATEGORY_NAMES[category] || '시니어';
+
+    const prompt = `한국 시니어(50-70대) 대상 YouTube 채널 중 "${categoryName}" 분야의 니치 채널 주제 6개를 추천해주세요.
+
+조건:
+- 경쟁이 적은 블루오션 주제
+- 시니어들의 실제 니즈 반영
+- 구체적이고 차별화된 주제
+- 수익화 가능성 높은 주제
+
+다음 JSON 형식으로만 응답:
+[{
+  "name": "채널 주제명",
+  "desc": "주제 설명 (1-2문장)",
+  "targetAudience": "타겟 시청자",
+  "potentialViews": "예상 월 조회수",
+  "blueOcean": 블루오션점수(70-99),
+  "contentIdeas": ["콘텐츠 아이디어1", "콘텐츠 아이디어2"],
+  "monetization": "수익화 방법"
+}]`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.9 }
+                })
+            }
+        );
+
+        if (!response.ok) throw new Error('Gemini API 오류');
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+    } catch (error) {
+        console.warn('Gemini 니치 채널 분석 실패:', error);
+    }
+
+    return [];
+}
+
+// 로컬 템플릿에서 니치 채널 가져오기
+function getLocalNicheChannels(category) {
+    if (category === 'all') {
+        // 모든 카테고리에서 랜덤 선택
+        const allChannels = [];
+        Object.keys(NICHE_CHANNEL_TEMPLATES).forEach(cat => {
+            const channels = NICHE_CHANNEL_TEMPLATES[cat];
+            const random = channels[Math.floor(Math.random() * channels.length)];
+            allChannels.push({ ...random, category: cat });
+        });
+        return allChannels.sort(() => Math.random() - 0.5);
+    }
+
+    const templates = NICHE_CHANNEL_TEMPLATES[category] || NICHE_CHANNEL_TEMPLATES.story;
+    return templates.map(t => ({
+        ...t,
+        blueOcean: 75 + Math.floor(Math.random() * 20),
+        targetAudience: `55-75세 ${CATEGORY_NAMES[category]} 관심층`,
+        contentIdeas: [`${t.name} 시작하기`, `${t.name} 성공 사례`],
+        monetization: '광고 수익 + 협찬'
+    }));
+}
+
+// 니치 채널 결과 렌더링
+function renderNicheChannelResults(channels) {
+    const container = document.getElementById('nicheChannelResults');
+
+    if (channels.length === 0) {
+        container.innerHTML = `
+            <div class="niche-channel-empty">
+                <div class="niche-channel-empty-icon">📺</div>
+                <p>카테고리를 선택하고 발굴 버튼을 클릭해주세요</p>
+            </div>
+        `;
+        return;
+    }
+
+    const icons = ['📺', '🎬', '📹', '🎥', '📽️', '🎞️'];
+
+    container.innerHTML = channels.map((ch, index) => `
+        <div class="niche-channel-item" onclick="selectNicheChannel(${index})" data-index="${index}">
+            <div class="niche-channel-header">
+                <span class="niche-channel-icon">${icons[index % icons.length]}</span>
+                <span class="niche-channel-title">${ch.name}</span>
+            </div>
+            <p class="niche-channel-desc">${ch.desc}</p>
+            <div class="niche-channel-metrics">
+                <span class="niche-metric highlight">🎯 블루오션 ${ch.blueOcean || 85}점</span>
+                <span class="niche-metric">👁️ ${ch.potentialViews}</span>
+                <span class="niche-metric">👤 ${ch.targetAudience || '시니어층'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 니치 채널 선택시 주제 생성
+function selectNicheChannel(index) {
+    const container = document.getElementById('nicheChannelResults');
+    const items = container.querySelectorAll('.niche-channel-item');
+    items.forEach((item, i) => {
+        item.style.borderColor = i === index ? '#10b981' : '';
+    });
+
+    // 해당 채널 관련 주제 생성
+    generateTopics();
+    showToast('📺 해당 채널 주제로 니치 주제를 생성합니다!');
+}
+
+// 카테고리 변경시 니치 채널 UI 업데이트
+function updateNicheChannelUI() {
+    const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
+    document.getElementById('nicheChannelSubtitle').textContent =
+        `"${categoryName}" 분야 니치 채널 주제를 발굴합니다`;
+    document.getElementById('nicheChannelResults').innerHTML = '';
 }
 
 // 동적 카테고리 생성
