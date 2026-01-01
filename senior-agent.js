@@ -1664,7 +1664,7 @@ async function generateScript() {
 
 // Gemini API로 스크립트 생성
 async function generateScriptWithGemini(category) {
-    const contentType = currentContentType === 'shorts' ? '60초 쇼츠' : '10분 롱폼';
+    const contentType = currentContentType === 'shorts' ? '3분 쇼츠' : '10분 롱폼';
     const categoryName = CATEGORY_NAMES[category] || '시니어';
 
     // 사연/건강 카테고리는 낭독 형식
@@ -1672,7 +1672,7 @@ async function generateScriptWithGemini(category) {
 
     const shortsPrompt = isNarrationStyle ?
         `당신은 시니어 사연 낭독 채널 전문 작가입니다.
-"${selectedTopic.title}" 주제로 60초 사연 낭독 스크립트를 작성하세요.
+"${selectedTopic.title}" 주제로 3분 분량의 사연 낭독 스크립트를 작성하세요.
 
 【형식: 타입캐스트 TTS용 - 깨끗한 낭독 대본만 출력】
 
@@ -1701,7 +1701,7 @@ async function generateScriptWithGemini(category) {
 위 형식대로 타입캐스트에 바로 붙여넣을 수 있는 깨끗한 낭독 대본만 작성하세요:` :
 
         `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
-"${selectedTopic.title}" 주제로 60초 쇼츠 스크립트를 작성하세요.
+"${selectedTopic.title}" 주제로 3분 분량의 쇼츠 스크립트를 작성하세요.
 
 【형식: 타입캐스트 TTS용 - 깨끗한 대본만 출력】
 
@@ -1791,7 +1791,7 @@ async function generateScriptWithGemini(category) {
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
                         temperature: 0.85,
-                        maxOutputTokens: currentContentType === 'shorts' ? 1024 : 3000,
+                        maxOutputTokens: currentContentType === 'shorts' ? 2000 : 3000,
                         topP: 0.9
                     }
                 })
