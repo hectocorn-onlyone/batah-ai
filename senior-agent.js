@@ -1762,6 +1762,126 @@ JSON 배열로만 응답: ["문구1", "문구2", "문구3", "문구4"]`;
     generateThumbnails();
 }
 
+// ===== AI 썸네일 이미지 생성 (나노 바나나 프로) =====
+let generatedThumbnailUrl = null;
+
+async function generateAIThumbnail() {
+    if (!selectedTopic) {
+        showToast('⚠️ 먼저 주제를 선택해주세요.');
+        return;
+    }
+
+    if (!geminiApiKey) {
+        showToast('⚠️ Gemini API 키를 먼저 설정해주세요.');
+        return;
+    }
+
+    const btn = document.getElementById('btnGenerateThumbnail');
+    const preview = document.getElementById('thumbnailPreview');
+    const actions = document.getElementById('thumbnailActions');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="thumb-gen-icon">🔄</span> 썸네일 생성 중...';
+
+    preview.innerHTML = `
+        <div class="thumbnail-loading">
+            <div class="loading-spinner">🎨</div>
+            <p>AI가 썸네일을 생성 중입니다...<br>약 10-20초 소요</p>
+        </div>
+    `;
+    actions.style.display = 'none';
+
+    const categoryName = CATEGORY_NAMES[getCategoryFromId(selectedTopic.id)] || '시니어';
+
+    const prompt = `YouTube 썸네일 이미지를 생성해주세요.
+
+주제: "${selectedTopic.title}"
+카테고리: ${categoryName}
+타겟: 한국 시니어 (50-70대)
+
+요구사항:
+- 16:9 비율의 YouTube 썸네일
+- 시니어가 클릭하고 싶어하는 따뜻하고 신뢰감 있는 디자인
+- 밝고 선명한 색상
+- 큰 텍스트로 핵심 메시지 표시: "${selectedTopic.title.substring(0, 15)}..."
+- 관련 이미지/아이콘 포함
+- 전문적이고 깔끔한 스타일`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${geminiApiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["TEXT", "IMAGE"]
+                    }
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'API 오류');
+        }
+
+        const data = await response.json();
+
+        // 이미지 데이터 추출
+        const parts = data.candidates?.[0]?.content?.parts || [];
+        let imageData = null;
+
+        for (const part of parts) {
+            if (part.inlineData?.mimeType?.startsWith('image/')) {
+                imageData = part.inlineData;
+                break;
+            }
+        }
+
+        if (imageData) {
+            generatedThumbnailUrl = `data:${imageData.mimeType};base64,${imageData.data}`;
+            preview.innerHTML = `<img src="${generatedThumbnailUrl}" alt="생성된 썸네일">`;
+            actions.style.display = 'flex';
+            showToast('✅ 썸네일이 생성되었습니다!');
+        } else {
+            throw new Error('이미지 데이터를 찾을 수 없습니다');
+        }
+
+    } catch (error) {
+        console.error('썸네일 생성 오류:', error);
+
+        // 폴백: Gemini로 썸네일 설명 생성 후 플레이스홀더 표시
+        preview.innerHTML = `
+            <div class="thumbnail-placeholder">
+                <span>⚠️</span>
+                <p>이미지 생성 실패<br><small>${error.message}</small></p>
+            </div>
+        `;
+        showToast(`❌ 썸네일 생성 실패: ${error.message}`);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span class="thumb-gen-icon">✨</span> 썸네일 이미지 생성';
+}
+
+// 썸네일 다운로드
+function downloadThumbnail() {
+    if (!generatedThumbnailUrl) {
+        showToast('⚠️ 다운로드할 썸네일이 없습니다.');
+        return;
+    }
+
+    const link = document.createElement('a');
+    link.href = generatedThumbnailUrl;
+    link.download = `thumbnail_${Date.now()}.png`;
+    link.click();
+    showToast('📥 썸네일 다운로드 완료!');
+}
+
 // ===== 쇼츠 스크립트 생성 (로컬) =====
 function generateLocalShortsScript(category) {
     const hooks = {

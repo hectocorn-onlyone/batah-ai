@@ -302,6 +302,33 @@
                                 -
                             </div>
                         </div>
+
+                        <!-- AI Thumbnail Generation -->
+                        <div class="thumbnail-generation">
+                            <div class="thumb-gen-header">
+                                <span class="thumb-gen-label">🖼️ AI 썸네일 생성</span>
+                                <small>나노 바나나 프로 (Gemini Image)</small>
+                            </div>
+                            <button class="btn-generate-thumbnail" id="btnGenerateThumbnail"
+                                onclick="generateAIThumbnail()">
+                                <span class="thumb-gen-icon">✨</span>
+                                썸네일 이미지 생성
+                            </button>
+                            <div class="thumbnail-preview" id="thumbnailPreview">
+                                <div class="thumbnail-placeholder">
+                                    <span>🖼️</span>
+                                    <p>주제 선택 후 버튼을 클릭하면<br>AI가 썸네일을 생성합니다</p>
+                                </div>
+                            </div>
+                            <div class="thumbnail-actions" id="thumbnailActions" style="display: none;">
+                                <button class="btn-download-thumb" onclick="downloadThumbnail()">
+                                    📥 다운로드
+                                </button>
+                                <button class="btn-regenerate-thumb" onclick="generateAIThumbnail()">
+                                    🔄 다시 생성
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Empty State -->
