@@ -85,8 +85,8 @@ const categoryModifiers = {
     trends: ['AI', '유튜브', '건강', '재테크', '여행', '취미', '가족', '음식', '운동', '명상']
 };
 
-// 추가된 커스텀 카테고리
-let customCategories = [];
+// 추가된 커스텀 카테고리 (localStorage에서 로드)
+let customCategories = JSON.parse(localStorage.getItem('senior_custom_categories') || '[]');
 let discoveredCategoryList = [];
 
 // ===== 니치 주제 데이터베이스 =====
@@ -579,10 +579,42 @@ let currentContentType = 'shorts';
 
 // ===== 초기화 =====
 document.addEventListener('DOMContentLoaded', function () {
+    loadSavedCategories(); // 저장된 카테고리 먼저 로드
     setupCategoryButtons();
     generateTopics();
     renderDiscoveryEmpty();
 });
+
+// ===== 저장된 카테고리 로드 =====
+function loadSavedCategories() {
+    const saved = JSON.parse(localStorage.getItem('senior_custom_categories') || '[]');
+    if (saved.length === 0) return;
+
+    const grid = document.getElementById('categoryGrid');
+
+    saved.forEach(category => {
+        // 버튼 추가
+        const newBtn = document.createElement('button');
+        newBtn.className = 'category-btn custom';
+        newBtn.dataset.category = category.id;
+        newBtn.innerHTML = `
+            <span class="cat-icon">${category.icon}</span>
+            <span class="cat-name">${category.name}</span>
+        `;
+        newBtn.addEventListener('click', function () {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.dataset.category;
+            generateTopicsForCustomCategory(category);
+        });
+        grid.appendChild(newBtn);
+
+        // 토픽 데이터베이스에 추가
+        addCustomCategoryTopics(category);
+    });
+
+    customCategories = saved;
+}
 
 // ===== 카테고리 버튼 설정 =====
 function setupCategoryButtons() {
@@ -739,7 +771,15 @@ function addCategoryToGrid(categoryId) {
     // 토픽 데이터베이스에 임시 주제 추가
     addCustomCategoryTopics(category);
 
+    // localStorage에 저장
+    saveCustomCategories();
+
     showToast(`"${category.name}" 카테고리가 추가되었습니다!`);
+}
+
+// ===== 커스텀 카테고리 저장 =====
+function saveCustomCategories() {
+    localStorage.setItem('senior_custom_categories', JSON.stringify(customCategories));
 }
 
 function addCustomCategoryTopics(category) {
