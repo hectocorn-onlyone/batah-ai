@@ -1428,29 +1428,37 @@ async function generateTopics() {
 
 // Gemini API로 주제 생성
 async function generateTopicsWithGemini(category, categoryName) {
-    const prompt = `당신은 YouTube 시니어 콘텐츠 전문가입니다.
-한국 시니어(50-70대) 대상 "${categoryName}" 분야의 니치 콘텐츠 주제 8개를 추천해주세요.
+    const prompt = `당신은 10년 경력의 시니어 YouTube 콘텐츠 전략가입니다.
+"${categoryName}" 분야에서 한국 시니어(50-70대)를 위한 블루오션 니치 콘텐츠 주제 8개를 발굴해주세요.
 
-요구사항:
-1. 경쟁이 적은 블루오션 주제
-2. 시니어들의 실제 고민과 니즈 반영
-3. 클릭하고 싶어지는 구체적인 제목
-4. 감정을 자극하는 표현 사용
-5. 수익화 가능성 높은 주제
+【분석 기준】
+1. 검색량: 높지만 경쟁자 적은 키워드
+2. 감정 자극: 클릭하고 싶어지는 제목
+3. 실용성: 바로 적용 가능한 정보
+4. 수익화: 광고/협찬 가능성
 
-다음 JSON 형식으로만 응답 (설명 없이 JSON만):
+【성공 사례 참고】
+- "60대 무릎통증, 이것만 하면 1주일 만에..." (조회수 50만)
+- "은퇴 후 월 200만원 버는 현실적인 방법" (조회수 80만)
+- "손주에게 물려줄 수 없는 추억, 우리 어머니 이야기" (조회수 30만)
+
+【JSON 형식으로만 응답】
+\`\`\`json
 [{
-  "title": "구체적인 콘텐츠 제목",
-  "icon": "관련 이모지",
-  "reason": "왜 이 주제가 좋은지 3문장 설명",
-  "targetAudience": "구체적인 타겟 시청자",
-  "keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"],
-  "blueOcean": 블루오션점수(75-95),
-  "competition": "경쟁도(매우 낮음/낮음/중간)",
-  "views": "예상 월 조회수",
-  "revenue": "예상 월 수익",
-  "growth": "성장 가능성"
-}]`;
+  "title": "클릭하고 싶어지는 구체적 제목 (숫자, 감정 포함)",
+  "icon": "주제와 어울리는 이모지 1개",
+  "reason": "이 주제가 블루오션인 이유 (2-3문장)",
+  "targetAudience": "구체적 타겟 (예: 무릎 아픈 60대 여성)",
+  "keywords": ["핵심키워드", "연관키워드", "롱테일키워드", "검색어", "태그"],
+  "blueOcean": 80,
+  "competition": "낮음",
+  "views": "월 10만~30만",
+  "revenue": "월 50만~150만원",
+  "growth": "급상승 중"
+}]
+\`\`\`
+
+JSON 배열만 출력하세요:`;
 
     try {
         const response = await fetch(
@@ -1659,39 +1667,88 @@ async function generateScriptWithGemini(category) {
     const contentType = currentContentType === 'shorts' ? '60초 쇼츠' : '10분 롱폼';
     const categoryName = CATEGORY_NAMES[category] || '시니어';
 
-    const prompt = `당신은 한국 시니어 대상 YouTube 콘텐츠 전문 작가입니다.
-다음 주제로 ${contentType} 스크립트를 작성해주세요.
+    const shortsPrompt = `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
+"${selectedTopic.title}" 주제로 60초 쇼츠 스크립트를 작성하세요.
 
-📌 주제: ${selectedTopic.title}
-📂 카테고리: ${categoryName}
-👤 타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
-🔑 키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
+【필수 규칙】
+✅ ~해요체 사용 (친근하고 따뜻한 어투)
+✅ 50-70대 시니어가 100% 이해할 수 있는 쉬운 단어
+✅ 감정을 자극하는 표현 (눈물, 웃음, 공감)
+✅ 구체적인 숫자와 예시 포함
+❌ AI스러운 딱딱한 문체 절대 금지
+❌ "~입니다", "~합니다" 같은 설명체 금지
+❌ 영어/전문용어 금지
 
-작성 원칙:
-1. 첫 3초에 강력한 훅으로 시청자를 사로잡기
-2. 시니어가 공감할 수 있는 따뜻하고 진정성 있는 어투
-3. 구체적인 정보와 실용적인 팁 포함
-4. 감정을 자극하는 스토리텔링
-5. 마지막에 구독 유도 CTA
+【스크립트 구조】
+[훅 - 3초] (시청자가 멈춰서 듣게 만드는 충격적인 한 문장)
+예: "이걸 몰라서 10년을 고생했어요..."
 
-${currentContentType === 'shorts' ? `
-쇼츠 구조:
-[훅 - 0~3초] 시청자 집중 문장
-[전개 - 3~30초] 핵심 내용 전달
-[클라이맥스 - 30~50초] 가장 중요한 메시지
-[마무리 - 50~60초] CTA와 다음 예고
-` : `
-롱폼 구조:
-[인트로 - 0~30초] 인사와 주제 소개
-[왜 중요한가 - 30초~2분] 주제의 중요성
-[본론 1 - 2분~4분] 첫 번째 핵심 포인트
-[본론 2 - 4분~6분] 두 번째 핵심 포인트
-[본론 3 - 6분~8분] 세 번째 핵심 포인트
-[정리 - 8분~9분] 핵심 요약
-[아웃트로 - 9분~10분] 마무리 인사와 CTA
-`}
+[전개 - 25초] (공감 → 문제 제기 → 해결책 힌트)
+- 청자의 경험과 연결되는 이야기
+- "혹시 여러분도..." 같은 질문
 
-스크립트만 작성해주세요 (설명 없이):`;
+[핵심 - 20초] (가장 중요한 메시지, 구체적 팁 3가지)
+- 숫자를 활용한 명확한 정보
+- 바로 실천할 수 있는 액션
+
+[마무리 - 12초] (감동 + CTA)
+- 따뜻한 응원 메시지
+- "구독하시면 매일 좋은 정보 받으실 수 있어요"
+
+타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
+키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
+
+위 구조대로 스크립트만 작성하세요:`;
+
+    const longPrompt = `당신은 10년 경력의 시니어 유튜브 전문 작가입니다.
+"${selectedTopic.title}" 주제로 10분 롱폼 영상 스크립트를 작성하세요.
+
+【필수 규칙】
+✅ ~해요체 사용 (친근하고 따뜻한 어투)
+✅ 50-70대 시니어가 100% 이해할 수 있는 쉬운 단어
+✅ 개인 경험담처럼 자연스럽게
+✅ 중간중간 시청자에게 질문하며 소통
+❌ AI스러운 딱딱한 문체 절대 금지
+❌ 영어/전문용어 금지
+
+【롱폼 스크립트 구조】
+
+[인트로 - 30초]
+"안녕하세요, 오늘도 찾아와 주셔서 고마워요."
+- 오늘 주제 예고
+- 왜 이 이야기를 하게 됐는지
+
+[공감 - 1분]
+- 시청자들이 겪고 있을 문제 언급
+- "저도 예전에 이런 경험이 있었는데요..."
+
+[본론 1 - 2분]
+- 첫 번째 핵심 정보
+- 구체적인 예시와 숫자
+
+[본론 2 - 2분]
+- 두 번째 핵심 정보
+- 실제 사례 이야기
+
+[본론 3 - 2분]
+- 세 번째 핵심 정보
+- 바로 실천할 수 있는 팁
+
+[정리 - 1분]
+- 오늘 내용 3줄 요약
+- 가장 중요한 것 강조
+
+[아웃트로 - 1분]
+- 따뜻한 응원 메시지
+- 댓글로 경험 공유 유도
+- 구독과 좋아요 부탁
+
+타겟: ${selectedTopic.targetAudience || '50-70대 시니어'}
+키워드: ${selectedTopic.keywords?.join(', ') || '시니어, 건강, 행복'}
+
+위 구조대로 자연스러운 스크립트를 작성하세요:`;
+
+    const prompt = currentContentType === 'shorts' ? shortsPrompt : longPrompt;
 
     try {
         const response = await fetch(
@@ -1702,8 +1759,9 @@ ${currentContentType === 'shorts' ? `
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
-                        temperature: 0.8,
-                        maxOutputTokens: currentContentType === 'shorts' ? 1024 : 2048
+                        temperature: 0.85,
+                        maxOutputTokens: currentContentType === 'shorts' ? 1024 : 3000,
+                        topP: 0.9
                     }
                 })
             }
@@ -1793,23 +1851,32 @@ async function generateAIThumbnail() {
 
     const categoryName = CATEGORY_NAMES[getCategoryFromId(selectedTopic.id)] || '시니어';
 
-    const prompt = `YouTube 썸네일 이미지를 생성해주세요.
+    // 고품질 썸네일 프롬프트 (나노 바나나 프로 최적화)
+    const prompt = `Create a professional YouTube thumbnail image.
 
-주제: "${selectedTopic.title}"
-카테고리: ${categoryName}
-타겟: 한국 시니어 (50-70대)
+Topic: "${selectedTopic.title}"
+Category: ${categoryName}
+Target audience: Korean seniors (50-70 years old)
 
-요구사항:
-- 16:9 비율의 YouTube 썸네일
-- 시니어가 클릭하고 싶어하는 따뜻하고 신뢰감 있는 디자인
-- 밝고 선명한 색상
-- 큰 텍스트로 핵심 메시지 표시: "${selectedTopic.title.substring(0, 15)}..."
-- 관련 이미지/아이콘 포함
-- 전문적이고 깔끔한 스타일`;
+STYLE REQUIREMENTS:
+- Professional YouTube thumbnail layout
+- Warm, trustworthy, inviting color palette (orange, gold, warm tones)
+- Clean, modern design that appeals to mature audience
+- High contrast for visibility
+- NO text overlay (we will add text separately)
+
+VISUAL ELEMENTS:
+- Central focal point related to the topic
+- Subtle gradient background
+- Soft lighting, warm atmosphere
+- Photorealistic quality
+- Emotional appeal for seniors
+
+Make it look like a successful Korean senior YouTube channel thumbnail.`;
 
     try {
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${geminiApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${geminiApiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1818,7 +1885,11 @@ async function generateAIThumbnail() {
                         parts: [{ text: prompt }]
                     }],
                     generationConfig: {
-                        responseModalities: ["TEXT", "IMAGE"]
+                        responseModalities: ["TEXT", "IMAGE"],
+                        imageConfig: {
+                            aspectRatio: "16:9",
+                            imageSize: "1K"
+                        }
                     }
                 })
             }
