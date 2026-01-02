@@ -2374,8 +2374,13 @@ function deleteHistoryItem(e, id) {
 }
 
 function restoreHistoryItem(id) {
-    const item = historyData.find(i => i.id === id);
-    if (!item) return;
+    const item = historyData.find(function (i) { return i.id === id; });
+    if (!item) {
+        console.error('History item not found:', id);
+        return;
+    }
+
+    console.log('Restoring history item:', item);
 
     // Restore Global State
     selectedTopic = item.topic;
@@ -2383,45 +2388,46 @@ function restoreHistoryItem(id) {
 
     // Restore UI
     // 1. Topic Info
-    document.getElementById('step2').style.display = 'block';
+    var categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
+    var selectedCategoryEl = document.getElementById('selectedCategory');
+    var selectedTitleEl = document.getElementById('selectedTitle');
 
-    const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
-    document.getElementById('selectedCategory').textContent = categoryName;
-    document.getElementById('selectedTitle').textContent = item.topic.title;
+    if (selectedCategoryEl) selectedCategoryEl.textContent = categoryName;
+    if (selectedTitleEl) selectedTitleEl.textContent = item.topic.title;
 
-    if (item.topic.blueOcean) document.getElementById('blueOceanScore').textContent = item.topic.blueOcean;
-    if (item.topic.competition) document.getElementById('competitionScore').textContent = item.topic.competition;
-    if (item.topic.reason) document.getElementById('topicReason').textContent = item.topic.reason;
-    if (item.topic.targetAudience) document.getElementById('targetAudience').textContent = item.topic.targetAudience;
+    var blueOceanEl = document.getElementById('blueOceanScore');
+    var competitionEl = document.getElementById('competitionScore');
+    var reasonEl = document.getElementById('topicReason');
+    var targetEl = document.getElementById('targetAudience');
+    var keywordsEl = document.getElementById('keywordsList');
 
-    if (item.topic.keywords) {
-        let kwHtml = '';
+    if (blueOceanEl && item.topic.blueOcean) blueOceanEl.textContent = item.topic.blueOcean;
+    if (competitionEl && item.topic.competition) competitionEl.textContent = item.topic.competition;
+    if (reasonEl && item.topic.reason) reasonEl.textContent = item.topic.reason;
+    if (targetEl && item.topic.targetAudience) targetEl.textContent = item.topic.targetAudience;
+
+    if (keywordsEl && item.topic.keywords) {
+        var kwHtml = '';
         item.topic.keywords.forEach(function (kw) {
             kwHtml += '<span class="keyword-tag">#' + kw + '</span>';
         });
-        document.getElementById('keywordsList').innerHTML = kwHtml;
+        keywordsEl.innerHTML = kwHtml;
     }
 
-    // Revenue info update
-    updateRevenueInfo();
-
     // 2. Script
-    if (item.script) {
-        document.getElementById('step3').style.display = 'block';
-        document.getElementById('scriptContent').innerText = item.script; // Use innerText to preserve line breaks
-
-        // Show Actions
-        const copyBtn = document.querySelector('.script-actions');
-        if (copyBtn) copyBtn.style.display = 'flex';
-
-        // Scroll to script
-        // document.getElementById('scriptContent').scrollIntoView({ behavior: 'smooth' });
+    var scriptEl = document.getElementById('scriptContent');
+    if (scriptEl && item.script) {
+        scriptEl.textContent = item.script;
+        console.log('Script restored:', item.script.substring(0, 100) + '...');
     }
 
     // 3. Thumbnail
-    if (item.thumbnailHtml) {
-        document.getElementById('thumbnailPreview').innerHTML = item.thumbnailHtml;
-        const thumbActions = document.querySelector('.thumbnail-actions');
+    var thumbEl = document.getElementById('thumbnailPreview');
+    if (thumbEl && item.thumbnailHtml) {
+        thumbEl.innerHTML = item.thumbnailHtml;
+        console.log('Thumbnail restored');
+
+        var thumbActions = document.querySelector('.thumbnail-actions');
         if (thumbActions && !item.thumbnailHtml.includes('placeholder')) {
             thumbActions.style.display = 'flex';
         }
