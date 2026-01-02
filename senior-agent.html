@@ -57,6 +57,27 @@
     <main class="agent-main">
         <div class="container">
             <div class="agent-layout">
+                <!-- History Toggle Button (Mobile/Desktop) -->
+                <button id="toggleHistoryBtn" class="history-toggle-float">
+                    🕒 기록 보기
+                </button>
+
+                <!-- History Sidebar Overlay -->
+                <div class="history-sidebar-overlay" id="historyOverlay"></div>
+
+                <!-- History Sidebar -->
+                <aside class="history-sidebar" id="historySidebar">
+                    <div class="history-header">
+                        <h3>최근 생성 기록</h3>
+                        <button id="closeHistoryBtn" class="close-history-btn">×</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="history-empty-state">
+                            저장된 기록이 없습니다.
+                        </div>
+                    </div>
+                </aside>
+
                 <!-- Left Panel: Categories & Topics -->
                 <div class="left-panel">
                     <!-- API Settings -->

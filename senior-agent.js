@@ -1680,6 +1680,8 @@ async function generateScript() {
 
         document.getElementById('scriptContent').textContent = script;
         await generateThumbnailsWithAI();
+        // 스크립트 저장
+        setTimeout(saveCurrentState, 500);
 
     } catch (error) {
         console.error('Script generation error:', error);
@@ -2028,6 +2030,8 @@ The text "${clickbaitText}" must be clearly visible and readable.`;
             preview.innerHTML = `<img src="${generatedThumbnailUrl}" alt="생성된 썸네일">`;
             actions.style.display = 'flex';
             showToast('✅ 썸네일이 생성되었습니다!');
+            // 썸네일 저장
+            setTimeout(saveCurrentState, 500);
         } else {
             throw new Error('이미지 데이터를 찾을 수 없습니다');
         }
@@ -2231,4 +2235,204 @@ style.textContent = `
         to { opacity: 0; transform: translateX(-50%) translateY(20px); }
     }
 `;
+`;
 document.head.appendChild(style);
+
+
+// ===== History Management System =====
+const HISTORY_KEY = 'senior_agent_history';
+let historyData = [];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    initHistory();
+});
+
+function initHistory() {
+    // Load data
+    try {
+        const stored = localStorage.getItem(HISTORY_KEY);
+        if (stored) {
+            historyData = JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error('Failed to load history:', e);
+        historyData = [];
+    }
+
+    // Render list
+    renderHistoryList();
+
+    // Event Listeners
+    const toggleBtn = document.getElementById('toggleHistoryBtn');
+    if (toggleBtn) toggleBtn.addEventListener('click', openHistory);
+    
+    const closeBtn = document.getElementById('closeHistoryBtn');
+    if (closeBtn) closeBtn.addEventListener('click', closeHistory);
+    
+    const overlay = document.getElementById('historyOverlay');
+    if (overlay) overlay.addEventListener('click', closeHistory);
+}
+
+function openHistory() {
+    document.getElementById('historySidebar')?.classList.add('open');
+    document.getElementById('historyOverlay')?.classList.add('open');
+}
+
+function closeHistory() {
+    document.getElementById('historySidebar')?.classList.remove('open');
+    document.getElementById('historyOverlay')?.classList.remove('open');
+}
+
+// Save topic, script, and thumbnail state
+function saveCurrentState() {
+    if (!selectedTopic) return;
+    
+    const scriptContent = document.getElementById('scriptContent')?.innerText;
+    const thumbnailHtml = document.getElementById('thumbnailPreview')?.innerHTML;
+    
+    // Don't save if nothing generated yet
+    if (!scriptContent && !thumbnailHtml) return;
+    
+    // Skip if loading message
+    if (scriptContent && (scriptContent.includes('작성 중') || scriptContent.includes('loading'))) return;
+    if (thumbnailHtml && (thumbnailHtml.includes('생성 중') || thumbnailHtml.includes('loading'))) return;
+
+    const newItem = {
+        id: selectedTopic.id,
+        timestamp: Date.now(),
+        category: currentCategory,
+        topic: selectedTopic,
+        script: scriptContent,
+        thumbnailHtml: thumbnailHtml
+    };
+
+    // Update existing or add new
+    const existingIndex = historyData.findIndex(item => item.id === newItem.id);
+    if (existingIndex !== -1) {
+        // Merge with existing logic (keep thumb if new is empty)
+        if (!newItem.thumbnailHtml && historyData[existingIndex].thumbnailHtml) {
+            newItem.thumbnailHtml = historyData[existingIndex].thumbnailHtml;
+        }
+        historyData.splice(existingIndex, 1);
+    }
+    
+    historyData.unshift(newItem);
+    
+    // Limit history size
+    if (historyData.length > 20) historyData.pop();
+    
+    // Save to local storage
+    try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+    } catch (e) {
+        console.warn('Storage full, trying to save without image data');
+        newItem.thumbnailHtml = ''; // Clear heavy data
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+    }
+    
+    renderHistoryList();
+}
+
+function renderHistoryList() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+
+    if (historyData.length === 0) {
+        list.innerHTML = '<div class="history-empty-state">저장된 기록이 없습니다.</div>';
+        return;
+    }
+
+    list.innerHTML = historyData.map(item => {
+        const date = new Date(item.timestamp).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const categoryName = CATEGORY_NAMES[item.category] || '기타';
+        const isActive = selectedTopic && selectedTopic.id === item.topic.id ? 'active' : '';
+        const hasScript = item.script ? '📝' : '';
+        const hasThumb = item.thumbnailHtml && !item.thumbnailHtml.includes('placeholder') ? '🖼️' : '';
+        
+        return `
+    < div class="history-item ${isActive}" onclick = "restoreHistoryItem(${item.id})" >
+                <div class="history-item-header">
+                    <span class="history-category">${categoryName}</span>
+                    <div>
+                        <span style="font-size:0.75rem">${hasScript}${hasThumb}</span>
+                        <button class="history-delete-btn" onclick="deleteHistoryItem(event, ${item.id})">삭제</button>
+                    </div>
+                </div>
+                <div class="history-title">${item.topic.title}</div>
+                <div class="history-date">${date}</div>
+            </div >
+    `;
+    }).join('');
+}
+
+function deleteHistoryItem(e, id) {
+    if (e) e.stopPropagation();
+    if (!confirm('기록을 삭제하시겠습니까?')) return;
+    
+    historyData = historyData.filter(item => item.id !== id);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+    renderHistoryList();
+}
+
+function restoreHistoryItem(id) {
+    const item = historyData.find(i => i.id === id);
+    if (!item) return;
+    
+    // Restore Global State
+    selectedTopic = item.topic;
+    currentCategory = item.category || 'story';
+    
+    // Restore UI
+    // 1. Topic Info
+    document.getElementById('step2').style.display = 'block';
+    
+    const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
+    document.getElementById('selectedCategory').textContent = categoryName;
+    document.getElementById('selectedTitle').textContent = item.topic.title;
+    
+    if (item.topic.blueOcean) document.getElementById('blueOceanScore').textContent = item.topic.blueOcean;
+    if (item.topic.competition) document.getElementById('competitionScore').textContent = item.topic.competition;
+    if (item.topic.reason) document.getElementById('topicReason').textContent = item.topic.reason;
+    if (item.topic.targetAudience) document.getElementById('targetAudience').textContent = item.topic.targetAudience;
+    
+    if (item.topic.keywords) {
+        document.getElementById('keywordsList').innerHTML = item.topic.keywords
+            .map(kw => `< span class="keyword-tag" > #${ kw }</span > `)
+            .join('');
+    }
+    
+    // Revenue info update
+    updateRevenueInfo();
+    
+    // 2. Script
+    if (item.script) {
+        document.getElementById('step3').style.display = 'block';
+        document.getElementById('scriptContent').innerText = item.script; // Use innerText to preserve line breaks
+        
+        // Show Actions
+        const copyBtn = document.querySelector('.script-actions');
+        if (copyBtn) copyBtn.style.display = 'flex';
+        
+        // Scroll to script
+        // document.getElementById('scriptContent').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // 3. Thumbnail
+    if (item.thumbnailHtml) {
+        document.getElementById('thumbnailPreview').innerHTML = item.thumbnailHtml;
+        const thumbActions = document.querySelector('.thumbnail-actions');
+        if (thumbActions && !item.thumbnailHtml.includes('placeholder')) {
+            thumbActions.style.display = 'flex';
+        }
+    }
+    
+    renderHistoryList();
+    
+    // Mobile: Close Sidebar
+    if (window.innerWidth < 1024) {
+        closeHistory();
+    }
+    
+    showToast('기록을 불러왔습니다.');
+}
