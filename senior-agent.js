@@ -2235,7 +2235,6 @@ style.textContent = `
         to { opacity: 0; transform: translateX(-50%) translateY(20px); }
     }
 `;
-`;
 document.head.appendChild(style);
 
 
@@ -2266,10 +2265,10 @@ function initHistory() {
     // Event Listeners
     const toggleBtn = document.getElementById('toggleHistoryBtn');
     if (toggleBtn) toggleBtn.addEventListener('click', openHistory);
-    
+
     const closeBtn = document.getElementById('closeHistoryBtn');
     if (closeBtn) closeBtn.addEventListener('click', closeHistory);
-    
+
     const overlay = document.getElementById('historyOverlay');
     if (overlay) overlay.addEventListener('click', closeHistory);
 }
@@ -2287,13 +2286,13 @@ function closeHistory() {
 // Save topic, script, and thumbnail state
 function saveCurrentState() {
     if (!selectedTopic) return;
-    
+
     const scriptContent = document.getElementById('scriptContent')?.innerText;
     const thumbnailHtml = document.getElementById('thumbnailPreview')?.innerHTML;
-    
+
     // Don't save if nothing generated yet
     if (!scriptContent && !thumbnailHtml) return;
-    
+
     // Skip if loading message
     if (scriptContent && (scriptContent.includes('작성 중') || scriptContent.includes('loading'))) return;
     if (thumbnailHtml && (thumbnailHtml.includes('생성 중') || thumbnailHtml.includes('loading'))) return;
@@ -2316,12 +2315,12 @@ function saveCurrentState() {
         }
         historyData.splice(existingIndex, 1);
     }
-    
+
     historyData.unshift(newItem);
-    
+
     // Limit history size
     if (historyData.length > 20) historyData.pop();
-    
+
     // Save to local storage
     try {
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
@@ -2330,7 +2329,7 @@ function saveCurrentState() {
         newItem.thumbnailHtml = ''; // Clear heavy data
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
     }
-    
+
     renderHistoryList();
 }
 
@@ -2343,33 +2342,32 @@ function renderHistoryList() {
         return;
     }
 
-    list.innerHTML = historyData.map(item => {
+    let html = '';
+    historyData.forEach(function (item) {
         const date = new Date(item.timestamp).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         const categoryName = CATEGORY_NAMES[item.category] || '기타';
         const isActive = selectedTopic && selectedTopic.id === item.topic.id ? 'active' : '';
         const hasScript = item.script ? '📝' : '';
         const hasThumb = item.thumbnailHtml && !item.thumbnailHtml.includes('placeholder') ? '🖼️' : '';
-        
-        return `
-    < div class="history-item ${isActive}" onclick = "restoreHistoryItem(${item.id})" >
-                <div class="history-item-header">
-                    <span class="history-category">${categoryName}</span>
-                    <div>
-                        <span style="font-size:0.75rem">${hasScript}${hasThumb}</span>
-                        <button class="history-delete-btn" onclick="deleteHistoryItem(event, ${item.id})">삭제</button>
-                    </div>
-                </div>
-                <div class="history-title">${item.topic.title}</div>
-                <div class="history-date">${date}</div>
-            </div >
-    `;
-    }).join('');
+
+        html += '<div class="history-item ' + isActive + '" onclick="restoreHistoryItem(' + item.id + ')">';
+        html += '<div class="history-item-header">';
+        html += '<span class="history-category">' + categoryName + '</span>';
+        html += '<div>';
+        html += '<span style="font-size:0.75rem">' + hasScript + hasThumb + '</span>';
+        html += '<button class="history-delete-btn" onclick="deleteHistoryItem(event, ' + item.id + ')">삭제</button>';
+        html += '</div></div>';
+        html += '<div class="history-title">' + item.topic.title + '</div>';
+        html += '<div class="history-date">' + date + '</div>';
+        html += '</div>';
+    });
+    list.innerHTML = html;
 }
 
 function deleteHistoryItem(e, id) {
     if (e) e.stopPropagation();
     if (!confirm('기록을 삭제하시겠습니까?')) return;
-    
+
     historyData = historyData.filter(item => item.id !== id);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
     renderHistoryList();
@@ -2378,46 +2376,48 @@ function deleteHistoryItem(e, id) {
 function restoreHistoryItem(id) {
     const item = historyData.find(i => i.id === id);
     if (!item) return;
-    
+
     // Restore Global State
     selectedTopic = item.topic;
     currentCategory = item.category || 'story';
-    
+
     // Restore UI
     // 1. Topic Info
     document.getElementById('step2').style.display = 'block';
-    
+
     const categoryName = CATEGORY_NAMES[currentCategory] || '시니어';
     document.getElementById('selectedCategory').textContent = categoryName;
     document.getElementById('selectedTitle').textContent = item.topic.title;
-    
+
     if (item.topic.blueOcean) document.getElementById('blueOceanScore').textContent = item.topic.blueOcean;
     if (item.topic.competition) document.getElementById('competitionScore').textContent = item.topic.competition;
     if (item.topic.reason) document.getElementById('topicReason').textContent = item.topic.reason;
     if (item.topic.targetAudience) document.getElementById('targetAudience').textContent = item.topic.targetAudience;
-    
+
     if (item.topic.keywords) {
-        document.getElementById('keywordsList').innerHTML = item.topic.keywords
-            .map(kw => `< span class="keyword-tag" > #${ kw }</span > `)
-            .join('');
+        let kwHtml = '';
+        item.topic.keywords.forEach(function (kw) {
+            kwHtml += '<span class="keyword-tag">#' + kw + '</span>';
+        });
+        document.getElementById('keywordsList').innerHTML = kwHtml;
     }
-    
+
     // Revenue info update
     updateRevenueInfo();
-    
+
     // 2. Script
     if (item.script) {
         document.getElementById('step3').style.display = 'block';
         document.getElementById('scriptContent').innerText = item.script; // Use innerText to preserve line breaks
-        
+
         // Show Actions
         const copyBtn = document.querySelector('.script-actions');
         if (copyBtn) copyBtn.style.display = 'flex';
-        
+
         // Scroll to script
         // document.getElementById('scriptContent').scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     // 3. Thumbnail
     if (item.thumbnailHtml) {
         document.getElementById('thumbnailPreview').innerHTML = item.thumbnailHtml;
@@ -2426,13 +2426,13 @@ function restoreHistoryItem(id) {
             thumbActions.style.display = 'flex';
         }
     }
-    
+
     renderHistoryList();
-    
+
     // Mobile: Close Sidebar
     if (window.innerWidth < 1024) {
         closeHistory();
     }
-    
+
     showToast('기록을 불러왔습니다.');
 }
