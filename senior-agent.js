@@ -2414,6 +2414,22 @@ function restoreHistoryItem(id) {
         keywordsEl.innerHTML = kwHtml;
     }
 
+    // Show content panels and hide empty state
+    var emptyState = document.getElementById('emptyState');
+    var selectedTopicPanel = document.getElementById('selectedTopicPanel');
+    var revenuePanel = document.getElementById('revenuePanel');
+    var contentPanel = document.getElementById('contentPanel');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (selectedTopicPanel) selectedTopicPanel.style.display = 'block';
+    if (revenuePanel) revenuePanel.style.display = 'block';
+    if (contentPanel) contentPanel.style.display = 'block';
+
+    // Update revenue info
+    if (typeof updateRevenueInfo === 'function') {
+        updateRevenueInfo();
+    }
+
     // 2. Script
     var scriptEl = document.getElementById('scriptContent');
     if (scriptEl && item.script) {
