@@ -2350,12 +2350,12 @@ function renderHistoryList() {
         const hasScript = item.script ? '📝' : '';
         const hasThumb = item.thumbnailHtml && !item.thumbnailHtml.includes('placeholder') ? '🖼️' : '';
 
-        html += '<div class="history-item ' + isActive + '" onclick="restoreHistoryItem(' + item.id + ')">';
+        html += '<div class="history-item ' + isActive + '" onclick="restoreHistoryItem(\'' + item.id + '\')">';
         html += '<div class="history-item-header">';
         html += '<span class="history-category">' + categoryName + '</span>';
         html += '<div>';
         html += '<span style="font-size:0.75rem">' + hasScript + hasThumb + '</span>';
-        html += '<button class="history-delete-btn" onclick="deleteHistoryItem(event, ' + item.id + ')">삭제</button>';
+        html += '<button class="history-delete-btn" onclick="deleteHistoryItem(event, \'' + item.id + '\')">삭제</button>';
         html += '</div></div>';
         html += '<div class="history-title">' + item.topic.title + '</div>';
         html += '<div class="history-date">' + date + '</div>';
