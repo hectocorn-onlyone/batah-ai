@@ -1632,7 +1632,7 @@ function updateSelectedTopicInfo() {
         hobby: '취미/문화'
     };
 
-    const category = getCategoryFromId(selectedTopic.id);
+    const category = currentCategory;
 
     document.getElementById('selectedCategory').textContent = categoryNames[category];
     document.getElementById('selectedTitle').textContent = selectedTopic.title;
@@ -1659,7 +1659,7 @@ async function generateScript() {
     const container = document.getElementById('scriptContent');
     container.innerHTML = '<div class="script-loading">🔄 AI가 고품질 스크립트를 작성 중입니다...</div>';
 
-    const category = getCategoryFromId(selectedTopic.id);
+    const category = currentCategory;
 
     try {
         let script = '';
