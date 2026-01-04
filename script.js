@@ -562,6 +562,7 @@ function adminLogin() {
 
         document.getElementById('currentPlanName').textContent = 'Enterprise (관리자)';
         closeModal('adminLoginModal');
+        updateNavForAdmin(true);
         showPage('admin');
         showNotification('🔐 관리자로 로그인했습니다. 전체 서비스를 이용할 수 있습니다.');
         renderAgents();
@@ -583,10 +584,27 @@ function restoreAdminSession() {
             currentUser.isLoggedIn = true;
             const planEl = document.getElementById('currentPlanName');
             if (planEl) planEl.textContent = 'Enterprise (관리자)';
+            updateNavForAdmin(true);
         } else {
             // 세션 만료
             localStorage.removeItem('batah_admin_session');
+            updateNavForAdmin(false);
         }
+    }
+}
+
+// 네비게이션 바 관리자 상태 업데이트
+function updateNavForAdmin(isAdmin) {
+    const navActions = document.getElementById('navActions');
+    if (!navActions) return;
+
+    if (isAdmin) {
+        navActions.innerHTML = `
+            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-size: 0.9rem;">🔐 관리자</span>
+            <button class="btn-outline" style="border-color: #e53e3e; color: #e53e3e; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="adminLogout()">로그아웃</button>
+        `;
+    } else {
+        navActions.innerHTML = `<button class="btn-primary" onclick="showUserLogin()">로그인</button>`;
     }
 }
 
@@ -596,7 +614,9 @@ function adminLogout() {
     currentUser.plan = 'free';
     currentUser.isLoggedIn = false;
     localStorage.removeItem('batah_admin_session');
-    document.getElementById('currentPlanName').textContent = 'Starter';
+    const planEl = document.getElementById('currentPlanName');
+    if (planEl) planEl.textContent = 'Starter';
+    updateNavForAdmin(false);
     showPage('home');
     showNotification('👋 관리자에서 로그아웃되었습니다.');
     renderAgents();
