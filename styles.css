@@ -1472,3 +1472,156 @@ textarea.input {
         grid-template-columns: 1fr;
     }
 }
+
+/* ======================
+   Senior AI Agent Category Cards
+   ====================== */
+.agent-categories {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xl);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.category-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    transition: var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transition: var(--transition-base);
+}
+
+.category-card.monetization::before {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.category-card.lifestyle::before {
+    background: linear-gradient(90deg, #4CAF50, #2196F3);
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.category-card.monetization:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.category-card.lifestyle:hover {
+    border-color: rgba(76, 175, 80, 0.5);
+    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.2);
+}
+
+.category-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-md);
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+}
+
+.category-title {
+    font-size: 1.6rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+.category-description {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+}
+
+.category-description strong {
+    color: var(--text-primary);
+}
+
+.category-features {
+    list-style: none;
+    text-align: left;
+    margin-bottom: var(--spacing-xl);
+    padding: 0;
+}
+
+.category-features li {
+    padding: 0.6rem 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.category-features li:last-child {
+    border-bottom: none;
+}
+
+.btn-category {
+    display: inline-block;
+    width: 100%;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-family: 'Outfit', sans-serif;
+}
+
+.category-card.monetization .btn-category {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a1a2e;
+}
+
+.category-card.monetization .btn-category:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+}
+
+.category-card.lifestyle .btn-category {
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    color: white;
+}
+
+.btn-category.coming-soon {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+.btn-category.coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive for category cards */
+@media (max-width: 768px) {
+    .agent-categories {
+        grid-template-columns: 1fr;
+    }
+
+    .category-icon {
+        font-size: 3rem;
+    }
+
+    .category-title {
+        font-size: 1.4rem;
+    }
+}
