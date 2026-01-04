@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
+        // onclick 핸들러가 이미 있는 링크는 건너뛰기
+        if (link.hasAttribute('onclick')) {
+            return;
+        }
         link.addEventListener('click', function (e) {
             if (this.getAttribute('href').startsWith('#')) {
                 e.preventDefault();
@@ -78,9 +82,8 @@ function setupNavigation() {
 }
 
 function scrollToSection(sectionId) {
-    // Hide dashboards
-    document.getElementById('admin-dashboard').classList.add('hidden');
-    document.getElementById('dashboard').classList.add('hidden');
+    // 빈 sectionId면 무시
+    if (!sectionId) return;
 
     const section = document.getElementById(sectionId);
     if (section) {
