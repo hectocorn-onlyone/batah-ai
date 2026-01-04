@@ -1789,3 +1789,85 @@ textarea.input {
         transform: translateY(-8px) scale(1.01);
     }
 }
+
+/* =======================
+   Content Agents Admin Panel
+   ======================= */
+.content-agents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.content-agent-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: var(--transition-base);
+}
+
+.content-agent-item:hover {
+    border-color: var(--border-hover);
+}
+
+.content-agent-icon {
+    font-size: 1.75rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+}
+
+.content-agent-info {
+    flex: 1;
+}
+
+.content-agent-info h4 {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.content-agent-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-select {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.status-select.status-free {
+    border-color: rgba(72, 187, 120, 0.5);
+    background: rgba(72, 187, 120, 0.1);
+}
+
+.status-select.status-premium {
+    border-color: rgba(130, 80, 255, 0.5);
+    background: rgba(130, 80, 255, 0.1);
+}
+
+.status-select.status-coming {
+    border-color: rgba(255, 200, 0, 0.5);
+    background: rgba(255, 200, 0, 0.1);
+}

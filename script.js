@@ -886,5 +886,117 @@ showPage = function (page) {
     if (page === 'admin') {
         renderPaymentRequests();
         renderUsersList();
+        renderContentAgentsList();
     }
 };
+
+// ==== 콘텐츠 에이전트 관리 시스템 ====
+
+// 기본 콘텐츠 에이전트 목록
+const defaultContentAgents = [
+    {
+        id: 'senior-topic',
+        name: '시니어 주제 발굴기',
+        icon: '🎯',
+        description: '시니어 타겟 블루오션 주제를 AI가 분석하고 발굴합니다.',
+        pageUrl: 'senior-agent.html',
+        status: 'free',
+        features: ['주제 발굴', '대본 생성', '썸네일 AI']
+    },
+    {
+        id: 'shorts-video',
+        name: '숏폼 영상 자동 제작',
+        icon: '📱',
+        description: '시니어 감성의 숏폼 영상을 AI가 자동으로 제작합니다.',
+        pageUrl: 'shorts-company.html',
+        status: 'free',
+        features: ['영상 자동 생성', 'AI 자막', '배경 이미지']
+    },
+    {
+        id: 'channel-growth',
+        name: '채널 성장 전략 분석',
+        icon: '📊',
+        description: '유튜브 채널 데이터를 분석하여 성장 전략을 제안합니다.',
+        pageUrl: '',
+        status: 'coming',
+        features: ['채널 분석', '경쟁자 분석', '트렌드 예측']
+    },
+    {
+        id: 'seo-keywords',
+        name: 'SEO 키워드 최적화',
+        icon: '🔍',
+        description: '영상 제목, 설명, 태그를 AI가 최적화합니다.',
+        pageUrl: '',
+        status: 'coming',
+        features: ['제목 최적화', '태그 추천', '설명 작성']
+    },
+    {
+        id: 'blog-writer',
+        name: '블로그 글 자동 작성',
+        icon: '✍️',
+        description: '시니어 타겟 블로그 글을 AI가 작성합니다.',
+        pageUrl: '',
+        status: 'coming',
+        features: ['글 자동 작성', 'SEO 최적화', '이미지 삽입']
+    },
+    {
+        id: 'consulting',
+        name: '수익화 컨설팅 AI',
+        icon: '💎',
+        description: '개인 맞춤형 수익화 전략을 AI가 상담합니다.',
+        pageUrl: '',
+        status: 'premium',
+        features: ['1:1 상담', '맞춤 전략', '로드맵']
+    }
+];
+
+// 콘텐츠 에이전트 데이터 로드
+let contentAgents = JSON.parse(localStorage.getItem('batah_content_agents')) || [...defaultContentAgents];
+
+// 콘텐츠 에이전트 저장
+function saveContentAgents() {
+    localStorage.setItem('batah_content_agents', JSON.stringify(contentAgents));
+}
+
+// 콘텐츠 에이전트 목록 렌더링 (관리자용)
+function renderContentAgentsList() {
+    const list = document.getElementById('contentAgentsList');
+    if (!list) return;
+
+    list.innerHTML = contentAgents.map(agent => `
+        <div class="content-agent-item">
+            <div class="content-agent-icon">${agent.icon}</div>
+            <div class="content-agent-info">
+                <h4>${agent.name}</h4>
+            </div>
+            <div class="content-agent-status">
+                <select onchange="changeContentAgentStatus('${agent.id}', this.value)" class="status-select status-${agent.status}">
+                    <option value="free" ${agent.status === 'free' ? 'selected' : ''}>✅ 무료</option>
+                    <option value="premium" ${agent.status === 'premium' ? 'selected' : ''}>💎 프리미엄</option>
+                    <option value="coming" ${agent.status === 'coming' ? 'selected' : ''}>🚧 준비중</option>
+                </select>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 콘텐츠 에이전트 상태 변경
+function changeContentAgentStatus(agentId, newStatus) {
+    const agent = contentAgents.find(a => a.id === agentId);
+    if (agent) {
+        agent.status = newStatus;
+        saveContentAgents();
+        renderContentAgentsList();
+        showNotification(`✅ ${agent.name}의 상태가 변경되었습니다.`);
+    }
+}
+
+// 콘텐츠 에이전트 초기화 (기본값으로)
+function resetContentAgents() {
+    if (confirm('모든 콘텐츠 에이전트 설정을 초기화하시겠습니까?')) {
+        contentAgents = [...defaultContentAgents];
+        saveContentAgents();
+        renderContentAgentsList();
+        showNotification('🔄 콘텐츠 에이전트 설정이 초기화되었습니다.');
+    }
+}
