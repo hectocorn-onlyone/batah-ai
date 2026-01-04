@@ -263,7 +263,11 @@
         <div class="container">
             <div class="dashboard-header">
                 <h2 class="dashboard-title">관리자 대시보드</h2>
-                <button class="btn-secondary" onclick="showPage('home')">홈으로</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-secondary" onclick="showPage('home')">홈으로</button>
+                    <button class="btn-outline" onclick="adminLogout()"
+                        style="border-color: #e53e3e; color: #e53e3e;">🔓 로그아웃</button>
+                </div>
             </div>
 
             <div class="admin-content">
