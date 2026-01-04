@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>콘텐츠 수익화 에이전트 - 시니어AI</title>
+    <meta name="description" content="시니어를 위한 콘텐츠 수익화 AI 에이전트. 유튜브, 블로그 등에서 수익을 창출하세요.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Page specific styles */
+        .agents-hub {
+            min-height: 100vh;
+            padding: 120px 0 80px;
+            background: var(--bg-primary);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .hub-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hub-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 30px rgba(255, 200, 0, 0.4));
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-10px) scale(1.05);
+            }
+        }
+
+        .hub-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hub-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .agents-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .agent-item {
+            background: linear-gradient(135deg, rgba(30, 25, 45, 0.9), rgba(20, 15, 35, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: block;
+        }
+
+        .agent-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700);
+            background-size: 200% 100%;
+            animation: gradientFlow 3s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .agent-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 200, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 200, 0, 0.15);
+        }
+
+        .agent-item.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .agent-item.coming-soon:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .agent-item-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-item-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 15px rgba(255, 200, 0, 0.3));
+        }
+
+        .agent-item-meta {
+            flex: 1;
+        }
+
+        .agent-item-title {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            font-weight: 700;
+        }
+
+        .agent-item-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-free {
+            background: rgba(72, 187, 120, 0.15);
+            color: #48BB78;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .badge-premium {
+            background: rgba(130, 80, 255, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(130, 80, 255, 0.3);
+        }
+
+        .badge-coming {
+            background: rgba(255, 200, 0, 0.15);
+            color: #FFD700;
+            border: 1px solid rgba(255, 200, 0, 0.3);
+        }
+
+        .agent-item-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .agent-item-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        .agent-item-arrow {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 200, 0, 0.5);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .agent-item:hover .agent-item-arrow {
+            color: #FFD700;
+            transform: translateY(-50%) translateX(5px);
+        }
+
+        .agent-item.coming-soon .agent-item-arrow {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <span class="logo-icon">✦</span>
+                    <span class="logo-text">시니어<span class="logo-ai">AI</span></span>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">홈</a>
+                    <a href="#" class="nav-link active">콘텐츠 수익화</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Agents Hub -->
+    <section class="agents-hub">
+        <div class="container">
+            <a href="index.html" class="back-link">
+                ← 홈으로 돌아가기
+            </a>
+
+            <div class="hub-header">
+                <div class="hub-icon">💰</div>
+                <h1 class="hub-title">콘텐츠 수익화 에이전트</h1>
+                <p class="hub-description">
+                    유튜브, 블로그 등 플랫폼에서 콘텐츠로 수익을 창출할 수 있도록 도와드리는 AI 에이전트입니다.
+                </p>
+            </div>
+
+            <div class="agents-list">
+                <!-- 시니어 주제 발굴기 -->
+                <a href="senior-agent.html" class="agent-item">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">🎯</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">시니어 주제 발굴기</h3>
+                            <span class="agent-item-badge badge-free">무료</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        시니어 타겟 블루오션 주제를 AI가 분석하고 발굴합니다.
+                        대본 작성과 썸네일 제안까지 원스톱으로 제공합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">주제 발굴</span>
+                        <span class="feature-tag">대본 생성</span>
+                        <span class="feature-tag">썸네일 AI</span>
+                    </div>
+                    <span class="agent-item-arrow">→</span>
+                </a>
+
+                <!-- 숏폼 영상 제작 -->
+                <a href="shorts-company.html" class="agent-item">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">📱</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">숏폼 영상 자동 제작</h3>
+                            <span class="agent-item-badge badge-free">무료</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        시니어 감성의 숏폼 영상을 AI가 자동으로 제작합니다.
+                        대본, 이미지, 자막까지 한 번에 생성합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">영상 자동 생성</span>
+                        <span class="feature-tag">AI 자막</span>
+                        <span class="feature-tag">배경 이미지</span>
+                    </div>
+                    <span class="agent-item-arrow">→</span>
+                </a>
+
+                <!-- 채널 성장 분석 -->
+                <div class="agent-item coming-soon">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">📊</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">채널 성장 전략 분석</h3>
+                            <span class="agent-item-badge badge-coming">준비중</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        유튜브 채널 데이터를 분석하여 성장 전략을 제안합니다.
+                        경쟁 채널 분석과 트렌드 예측을 제공합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">채널 분석</span>
+                        <span class="feature-tag">경쟁자 분석</span>
+                        <span class="feature-tag">트렌드 예측</span>
+                    </div>
+                </div>
+
+                <!-- SEO 최적화 -->
+                <div class="agent-item coming-soon">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">🔍</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">SEO 키워드 최적화</h3>
+                            <span class="agent-item-badge badge-coming">준비중</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        영상 제목, 설명, 태그를 AI가 최적화합니다.
+                        검색 노출을 극대화하는 키워드를 추천합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">제목 최적화</span>
+                        <span class="feature-tag">태그 추천</span>
+                        <span class="feature-tag">설명 작성</span>
+                    </div>
+                </div>
+
+                <!-- 블로그 글 작성 -->
+                <div class="agent-item coming-soon">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">✍️</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">블로그 글 자동 작성</h3>
+                            <span class="agent-item-badge badge-coming">준비중</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        시니어 타겟 블로그 글을 AI가 작성합니다.
+                        애드센스 수익을 극대화하는 구조로 최적화합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">글 자동 작성</span>
+                        <span class="feature-tag">SEO 최적화</span>
+                        <span class="feature-tag">이미지 삽입</span>
+                    </div>
+                </div>
+
+                <!-- 수익화 컨설팅 -->
+                <div class="agent-item coming-soon">
+                    <div class="agent-item-header">
+                        <span class="agent-item-icon">💎</span>
+                        <div class="agent-item-meta">
+                            <h3 class="agent-item-title">수익화 컨설팅 AI</h3>
+                            <span class="agent-item-badge badge-premium">프리미엄</span>
+                        </div>
+                    </div>
+                    <p class="agent-item-desc">
+                        개인 맞춤형 수익화 전략을 AI가 상담합니다.
+                        현재 상황을 분석하고 단계별 로드맵을 제공합니다.
+                    </p>
+                    <div class="agent-item-features">
+                        <span class="feature-tag">1:1 상담</span>
+                        <span class="feature-tag">맞춤 전략</span>
+                        <span class="feature-tag">로드맵</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-icon">✦</span>
+                        <span class="logo-text">시니어<span class="logo-ai">AI</span></span>
+                    </div>
+                    <p class="footer-description">시니어를 위한<br>AI 에이전트 플랫폼</p>
+                    <p class="footer-copyright">© 2025 Senior AI. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
