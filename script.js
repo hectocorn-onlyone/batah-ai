@@ -89,43 +89,62 @@ function scrollToSection(sectionId) {
 }
 
 function showPage(page) {
-    // 모든 대시보드 숨기기
-    document.getElementById('admin-dashboard').classList.add('hidden');
-    document.getElementById('dashboard').classList.add('hidden');
+    console.log('showPage called with:', page); // 디버그 로그
 
-    // 메인 콘텐츠 섹션들
+    // 모든 대시보드와 메인 섹션들
+    const adminDashboard = document.getElementById('admin-dashboard');
+    const userDashboard = document.getElementById('dashboard');
     const mainSections = ['home', 'agents', 'pricing'];
-    const mainNav = document.querySelector('.navbar');
 
+    // 모든 섹션과 대시보드 숨기기
+    if (adminDashboard) {
+        adminDashboard.classList.add('hidden');
+        adminDashboard.style.display = 'none';
+    }
+    if (userDashboard) {
+        userDashboard.classList.add('hidden');
+        userDashboard.style.display = 'none';
+    }
+    mainSections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) {
+            section.classList.add('hidden');
+            section.style.display = 'none';
+        }
+    });
+
+    // 요청된 페이지 표시
     if (page === 'admin') {
-        // 관리자 대시보드일 때 메인 섹션들 숨기기
-        mainSections.forEach(id => {
-            const section = document.getElementById(id);
-            if (section) section.classList.add('hidden');
-        });
-        document.getElementById('admin-dashboard').classList.remove('hidden');
+        console.log('Showing admin dashboard'); // 디버그 로그
+        if (adminDashboard) {
+            adminDashboard.classList.remove('hidden');
+            adminDashboard.style.display = 'block';
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (page === 'dashboard') {
-        // 사용자 대시보드일 때 메인 섹션들 숨기기
-        mainSections.forEach(id => {
-            const section = document.getElementById(id);
-            if (section) section.classList.add('hidden');
-        });
-        document.getElementById('dashboard').classList.remove('hidden');
+        if (userDashboard) {
+            userDashboard.classList.remove('hidden');
+            userDashboard.style.display = 'block';
+        }
         renderUserAgents();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (page === 'home') {
-        // 홈으로 돌아갈 때 메인 섹션들 다시 보이기
         mainSections.forEach(id => {
             const section = document.getElementById(id);
-            if (section) section.classList.remove('hidden');
+            if (section) {
+                section.classList.remove('hidden');
+                section.style.display = '';
+            }
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        // 다른 섹션들도 보이기
+        // agents, pricing 등
         mainSections.forEach(id => {
             const section = document.getElementById(id);
-            if (section) section.classList.remove('hidden');
+            if (section) {
+                section.classList.remove('hidden');
+                section.style.display = '';
+            }
         });
         scrollToSection(page);
     }
