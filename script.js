@@ -509,6 +509,11 @@ function formatExpiry(input) {
 // Admin
 function showAdminLogin(e) {
     e.preventDefault();
+    // 이미 관리자로 로그인되어 있으면 바로 대시보드로 이동
+    if (currentUser.isAdmin) {
+        showPage('admin');
+        return;
+    }
     showModal('adminLoginModal');
 }
 

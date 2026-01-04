@@ -240,6 +240,9 @@
                     <a href="index.html" class="nav-link">홈</a>
                     <a href="#" class="nav-link active">콘텐츠 수익화</a>
                 </div>
+                <div class="nav-actions" id="navActions">
+                    <!-- Dynamically updated based on login status -->
+                </div>
             </div>
         </div>
     </nav>
@@ -384,7 +387,32 @@
         }
 
         // 페이지 로드 시 렌더링
-        document.addEventListener('DOMContentLoaded', renderAgents);
+        document.addEventListener('DOMContentLoaded', function () {
+            renderAgents();
+            checkAdminSession();
+        });
+
+        // 관리자 세션 확인 및 네비게이션 업데이트
+        function checkAdminSession() {
+            const savedSession = localStorage.getItem('batah_admin_session');
+            const navActions = document.getElementById('navActions');
+
+            if (savedSession) {
+                const session = JSON.parse(savedSession);
+                // 24시간 이내 로그인만 유효
+                if (Date.now() - session.loginTime < 24 * 60 * 60 * 1000) {
+                    navActions.innerHTML = `
+                        <span style="color: var(--text-secondary); margin-right: 1rem;">🔐 관리자</span>
+                        <a href="index.html" class="btn-secondary btn-sm">관리자 페이지</a>
+                    `;
+                } else {
+                    localStorage.removeItem('batah_admin_session');
+                    navActions.innerHTML = `<a href="index.html" class="btn-primary btn-sm">로그인</a>`;
+                }
+            } else {
+                navActions.innerHTML = `<a href="index.html" class="btn-primary btn-sm">로그인</a>`;
+            }
+        }
     </script>
 </body>
 
