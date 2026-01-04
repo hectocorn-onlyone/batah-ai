@@ -2368,15 +2368,18 @@ function deleteHistoryItem(e, id) {
     if (e) e.stopPropagation();
     if (!confirm('기록을 삭제하시겠습니까?')) return;
 
-    historyData = historyData.filter(item => item.id !== id);
+    const idStr = String(id);
+    historyData = historyData.filter(item => String(item.id) !== idStr);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
     renderHistoryList();
 }
 
 function restoreHistoryItem(id) {
-    const item = historyData.find(function (i) { return i.id === id; });
+    // Convert to string for comparison since onclick passes string
+    const idStr = String(id);
+    const item = historyData.find(function (i) { return String(i.id) === idStr; });
     if (!item) {
-        console.error('History item not found:', id);
+        console.error('History item not found:', id, 'Available IDs:', historyData.map(i => i.id));
         return;
     }
 
