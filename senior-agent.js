@@ -2439,14 +2439,22 @@ function restoreHistoryItem(id) {
 
     // 3. Thumbnail
     var thumbEl = document.getElementById('thumbnailPreview');
+    var thumbActions = document.getElementById('thumbnailActions');
     if (thumbEl && item.thumbnailHtml) {
         thumbEl.innerHTML = item.thumbnailHtml;
         console.log('Thumbnail restored');
 
-        var thumbActions = document.querySelector('.thumbnail-actions');
+        // Restore generatedThumbnailUrl for download function
+        var imgMatch = item.thumbnailHtml.match(/src="(data:image[^"]+)"/);
+        if (imgMatch) {
+            generatedThumbnailUrl = imgMatch[1];
+        }
+
         if (thumbActions && !item.thumbnailHtml.includes('placeholder')) {
             thumbActions.style.display = 'flex';
         }
+    } else if (thumbActions) {
+        thumbActions.style.display = 'none';
     }
 
     renderHistoryList();
