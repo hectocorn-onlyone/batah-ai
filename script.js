@@ -51,6 +51,7 @@ let editingAgentId = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
+    restoreAdminSession(); // 관리자 세션 복원
     renderAgents();
     renderAdminAgents();
     renderUserAgents();
@@ -519,6 +520,15 @@ function adminLogin() {
     if (username === 'admin' && password === 'mypassword123') {
         currentUser.isAdmin = true;
         currentUser.plan = 'enterprise'; // 관리자는 전체 서비스 이용 가능
+        currentUser.isLoggedIn = true;
+
+        // localStorage에 관리자 세션 저장
+        localStorage.setItem('batah_admin_session', JSON.stringify({
+            isAdmin: true,
+            plan: 'enterprise',
+            loginTime: Date.now()
+        }));
+
         document.getElementById('currentPlanName').textContent = 'Enterprise (관리자)';
         closeModal('adminLoginModal');
         showPage('admin');
@@ -528,6 +538,37 @@ function adminLogin() {
     } else {
         alert('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
+}
+
+// 관리자 세션 복원
+function restoreAdminSession() {
+    const savedSession = localStorage.getItem('batah_admin_session');
+    if (savedSession) {
+        const session = JSON.parse(savedSession);
+        // 24시간 이내 로그인만 유효
+        if (Date.now() - session.loginTime < 24 * 60 * 60 * 1000) {
+            currentUser.isAdmin = true;
+            currentUser.plan = 'enterprise';
+            currentUser.isLoggedIn = true;
+            const planEl = document.getElementById('currentPlanName');
+            if (planEl) planEl.textContent = 'Enterprise (관리자)';
+        } else {
+            // 세션 만료
+            localStorage.removeItem('batah_admin_session');
+        }
+    }
+}
+
+// 관리자 로그아웃
+function adminLogout() {
+    currentUser.isAdmin = false;
+    currentUser.plan = 'free';
+    currentUser.isLoggedIn = false;
+    localStorage.removeItem('batah_admin_session');
+    document.getElementById('currentPlanName').textContent = 'Starter';
+    showPage('home');
+    showNotification('👋 관리자에서 로그아웃되었습니다.');
+    renderAgents();
 }
 
 // Modal Functions
